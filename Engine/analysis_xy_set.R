@@ -19,6 +19,7 @@ error = f_libraries(
   necessary.std = c("dplyr", "rlang", "ggplot2", "gridExtra"),
   necessary.github = c()
 )
+print(glue::glue("RUNNING R SERVER ..."))
 print(glue::glue("Package status: {error}"))
 print(glue::glue("=============================================="))
 #====================================================
