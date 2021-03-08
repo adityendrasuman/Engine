@@ -110,7 +110,7 @@ if (args[2] == "all") {
 }
 
 graph %>% 
-  f_plotter()
+  f_plotter(g_excel_frontend_dir)
 
 #====================================================
 

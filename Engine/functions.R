@@ -411,7 +411,7 @@ f_graph_1 <- function(.answer, x_all, x_label = "", y_label = "", condition = ""
   return(p)
 }
 
-f_plotter <- function(graph){
+f_plotter <- function(graph, location){
   ggplot2::ggsave(
     plot = gridExtra::marrangeGrob(graph, nrow=1, ncol=1), 
     filename=file.path(g_excel_frontend_dir, "Latest plots.pdf"),
@@ -419,7 +419,7 @@ f_plotter <- function(graph){
     height=6
   )
   
-  shell.exec(file.path(g_excel_frontend_dir, "Latest plots.pdf"))
+  shell.exec(file.path(location, "Latest plots.pdf"))
 }
 
 
