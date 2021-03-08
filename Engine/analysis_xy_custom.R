@@ -19,7 +19,7 @@ error = f_libraries(
   necessary.std = c("dplyr", "rlang", "stats", "ggplot2", "scales", "forcats", "jsonlite"),
   necessary.github = c()
 )
-print(glue::glue("RUNNING R SERVER"))
+print(glue::glue("RUNNING R SERVER ..."))
 print(glue::glue("Package status: {error}"))
 print(glue::glue("=============================================="))
 #====================================================
