@@ -12,12 +12,16 @@ setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
 # load environment ----
 load("env.RData")
 
+source(file.path(g_excel_backend_temp_nospace_dir_rf, "functions.R"))
+
 # load librarise ----
 error = f_libraries(
   necessary.std = c("openxlsx", "glue"),
   necessary.github = c()
 )
-print(error)
+print(glue::glue("RUNNING R SERVER ..."))
+print(glue::glue("Package status: {error}"))
+print(glue::glue("=============================================="))
 #====================================================
 
 print("Importing raw data ...")
