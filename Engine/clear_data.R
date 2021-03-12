@@ -2,11 +2,9 @@
 rm(list = ls())
 if (!is.null(dev.list())) dev.off()
 cat("\014")
-options(survey.lonely.psu = "adjust")
 
 # capture variable coming from vba ----
 args <- commandArgs(trailingOnly=T)
-args <- c("C:|Users|adity|Dropbox (Dalberg)|INITIATIVES|EXCEL SURVEY v13|Temp|")
 
 # set working director ---- 
 setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
@@ -14,12 +12,16 @@ setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
 # load environment ----
 load("env.RData")
 
+source(file.path(g_excel_backend_temp_nospace_dir_rf, "functions.R"))
+
 # load librarise ----
 error = f_libraries(
   necessary.std = c(),
   necessary.github = c()
 )
-print(error)
+print(glue::glue("RUNNING R SERVER ..."))
+print(glue::glue("Package status: {error}"))
+print(glue::glue("=============================================="))
 #====================================================
 
 rm(list = ls(pattern = "^d_[0-9]+"))
