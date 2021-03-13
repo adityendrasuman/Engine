@@ -17,20 +17,22 @@ error = f_libraries(
   necessary.std = c("dplyr", "stringr", "openxlsx", "profvis"),
   necessary.github = c()
 )
-print(error)
+print(glue::glue("RUNNING R SERVER ..."))
+print(glue::glue("Package status: {error}"))
+print(glue::glue("=============================================="))
 #====================================================
 
 cols_to_be_rectified <- names(d_01)[vapply(d_01, is.character, logical(1))]
 d_01[,cols_to_be_rectified] <- lapply(d_01[,cols_to_be_rectified], trimws)
 
-weird_chr <- paste(c("^\\s+.+\\s+$", ".+\\s+$", "^\\s+.+$"), collapse = "|")
-summary <- f_id_char(d_01, weird_chr)
+whitespaces <- paste(c("^\\s+.+\\s+$", ".+\\s+$", "^\\s+.+$"), collapse = "|")
+summary <- f_id_char(d_01, whitespaces)
 
 if(is.null(nrow(summary))) {
-  print("No leading or lagging white spaces")
+  print(glue::glue("Any leading or lagging white spaces has been removed"))
 } else if(nrow(summary) > 0) {
-  print("White spaces could not be removed...")
-  print("Please remove manually in the raw data")
+  print(glue::glue("All white spaces could not be removed"))
+  print(glue::glue("Please remove manually in the raw data and upload it again"))
 }
 
 Sys.sleep(3)
