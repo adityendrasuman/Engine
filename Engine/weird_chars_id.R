@@ -22,14 +22,18 @@ print(glue::glue("Package status: {error}"))
 print(glue::glue("=============================================="))
 #====================================================
 
+print(glue::glue("Picking suggestions for weird characters from the excel interface..."))
 supplied_weird_chr <- openxlsx::read.xlsx(g_file_path, namedRegion = "wc1_R", colNames = F)
-print(glue::glue("Searching for weird characters..."))
+
 weird_chr <- paste(c("[^\x01-\x7F]", supplied_weird_chr[[1]]), collapse = "|")
 
+print(glue::glue("Searching for weird characters..."))
 summary <- f_id_char(d_01, weird_chr)
 
 summary %>% 
   write.table(file = file.path("temp.csv"), sep=",", col.names = F, row.names = F)
+
+Sys.sleep(0)
 
 #====================================================
 

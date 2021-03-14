@@ -22,7 +22,7 @@ print(glue::glue("Package status: {error}"))
 print(glue::glue("=============================================="))
 #====================================================
 
-print("Importing raw data ...")
+print(glue::glue("Importing raw data from the excel interface..."))
 d_01 <- openxlsx::read.xlsx(g_file_path, namedRegion = "raw_data", colNames = T)
 print(glue::glue("Imported data has {ncol(d_01)} columns and {nrow(d_01)} rows"))
 

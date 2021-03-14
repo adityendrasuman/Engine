@@ -22,6 +22,7 @@ print(glue::glue("Package status: {error}"))
 print(glue::glue("=============================================="))
 #====================================================
 
+print(glue::glue("Picking mapping for weird characters from the excel interface..."))
 map <- openxlsx::read.xlsx(g_file_path, namedRegion = "wc3_R", colNames = F) %>% 
   unique()
 
@@ -41,10 +42,9 @@ for (var in colnames(d_01)){
 }
 close(pb)
 
+print(glue::glue("Double checking..."))
 supplied_weird_chr <- openxlsx::read.xlsx(g_file_path, namedRegion = "wc1_R", colNames = F)
 weird_chr <- paste(c("[^\x01-\x7F]", supplied_weird_chr[[1]]), collapse = "|")
-
-print(glue::glue("Double checking..."))
 summary <- f_id_char(d_01, weird_chr)
 
 if(is.null(nrow(summary))) {

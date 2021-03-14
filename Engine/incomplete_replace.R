@@ -17,47 +17,54 @@ error = f_libraries(
   necessary.std = c("dplyr", "stringr", "openxlsx", "rlang"),
   necessary.github = c()
 )
-print(error)
+print(glue::glue("RUNNING R SERVER ..."))
+print(glue::glue("Package status: {error}"))
+print(glue::glue("=============================================="))
 #====================================================
 
+print(glue::glue("Picking mapping for incomplete responses from the excel interface..."))
 map <- openxlsx::read.xlsx(g_file_path, namedRegion = "incomplete_R", colNames = F) %>% 
   filter(X3 != "--") %>% 
   unique()
 
-print("Replacing incomplete responses...")
-
-for (var in unique(map[, "X1"])){
+if (nrow(map) == 0){
+  print(glue::glue("Your input indicates no incomlete response"))
+} else {
+  print(glue::glue("Replacing incomplete responses..."))
   
-  names <- map %>% 
-    filter(X1 == var) %>% 
-    select(X2) 
-  
-  for (name in names[[1]]){
+  for (var in unique(map[, "X1"])){
     
-    n_row_old <- d_01 %>% 
-      select(var) %>% 
-      filter(!!rlang::sym(var) == name) %>% 
-      nrow()
+    names <- map %>% 
+      filter(X1 == var) %>% 
+      select(X2) 
     
-    value <- map[map$X2 == name, "X3"]
-    d_01[, var] <- ifelse(d_01[, var] == name, value, d_01[, var])
-    
-    n_row_old_after <- d_01 %>% 
-      select(var) %>% 
-      filter(!!rlang::sym(var) == name) %>% 
-      nrow()
-    
-    n_row_new <- d_01 %>% 
-      select(var) %>% 
-      filter(!!rlang::sym(var) == value) %>% 
-      nrow()
-    
-    if (n_row_new == n_row_old & n_row_old_after == 0){
-      print(glue::glue("Replaced {n_row_new} instances of '{name}' with '{value}'"))
-    }
-    
-    if (n_row_new != n_row_old | n_row_old_after > 0){
-      print(glue::glue("Could NOT replace '{name}' with '{value}'"))
+    for (name in names[[1]]){
+      
+      n_row_old <- d_01 %>% 
+        select(var) %>% 
+        filter(!!rlang::sym(var) == name) %>% 
+        nrow()
+      
+      value <- map[map$X2 == name, "X3"]
+      d_01[, var] <- ifelse(d_01[, var] == name, value, d_01[, var])
+      
+      n_row_old_after <- d_01 %>% 
+        select(var) %>% 
+        filter(!!rlang::sym(var) == name) %>% 
+        nrow()
+      
+      n_row_new <- d_01 %>% 
+        select(var) %>% 
+        filter(!!rlang::sym(var) == value) %>% 
+        nrow()
+      
+      if (n_row_new == n_row_old & n_row_old_after == 0){
+        print(glue::glue("Replaced {n_row_new} instances of '{name}' with '{value}'"))
+      }
+      
+      if (n_row_new != n_row_old | n_row_old_after > 0){
+        print(glue::glue("Could NOT replace '{name}' with '{value}'"))
+      }
     }
   }
 }

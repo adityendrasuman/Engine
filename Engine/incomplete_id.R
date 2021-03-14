@@ -17,13 +17,18 @@ error = f_libraries(
   necessary.std = c("dplyr", "purrr", "stringr"),
   necessary.github = c()
 )
-print(error)
+print(glue::glue("RUNNING R SERVER ..."))
+print(glue::glue("Package status: {error}"))
+print(glue::glue("=============================================="))
 #====================================================
+
+print(glue::glue("Searching for strings with over 30 characters..."))
 
 list_of_variables <- d_01 %>%
   colnames()
 
 summary <- purrr::map_dfr(list_of_variables, function(var) {
+  
   temp <- d_01 %>%
     pull(!!var) %>%
     nchar() %>%

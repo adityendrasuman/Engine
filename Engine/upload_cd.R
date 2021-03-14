@@ -38,7 +38,7 @@ cat(glue::glue("error: {error}"), file=log_file, sep="\n", append=TRUE)
 
 # remove unnecessary variables from environment ----
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
-rm("d_00", "d_01")
+rm("d_01")
 
 # save environment in a session temp variable ----
 save.image(file=file.path(g_wd, "env.RData"))
