@@ -14,7 +14,7 @@ load("env.RData")
 
 # load librarise ----
 error = f_libraries(
-  necessary.std = c("glue", "dplyr"),
+  necessary.std = c("glue", "dplyr", "rlang"),
   necessary.github = c()
 )
 print(glue::glue("RUNNING R SERVER..."))
@@ -33,30 +33,41 @@ numb <- map %>%
   filter(X2 == "Yes")
 var_numeric <- numb[["X1"]]
 
-temp_data <- d_01
+d_01_non_na <- d_01
 
 if (length(var_numeric) > 0){
   for (var in var_numeric){
+    
+    var_sym <- var %>% rlang::sym()
+    
     tryCatch(
       {
         # try part
         d_01[,var] = as.numeric(d_01[,var])
       },
-      
       warning = function(w){
-        print(glue::glue("Warning generated while translating '{var}' as numeric"))
-        print(glue::glue("Unique values in column '{var}':"))
+        # catch part
+        print(glue::glue("Warning generated while translating '{var}' as numeric: {w}"))
+        print(glue::glue("!! Values in numeric column '{var}' that generated 'NA':"))
         temp_data %>% 
           select(var) %>%
           table() %>% 
           as.data.frame() %>% 
           select(Value = 1, Freq) %>% 
+          filter(stringr::str_detect(Value, "^[+-]?(\\d*\\.?\\d+|\\d+\\.?\\d*)$", negate = T)) %>%
+          filter(stringr::str_detect(Value, "^\\s*$", negate = T)) %>%
           print()
+        print(glue::glue("-------------------------"))
         return(NULL)
       },
-      
       finally={
-        d_01[,var] = as.numeric(d_01[,var])
+        # do part
+        d_01 <- d_01 %>% 
+          mutate(!!var_sym := ifelse(str_detect(!!var_sym, "^[+-]?(\\d*\\.?\\d+|\\d+\\.?\\d*)$", negate = T) &
+                                     stringr::str_detect(!!var_sym, "^\\s*$", negate = T), "99999999", !!var_sym))
+        
+        d_01[,var] <- as.numeric(d_01[,var]) %>%
+          suppressWarnings()
       }
     )
   }
@@ -72,10 +83,10 @@ if (length(var_char) > 0){
   }
 }
 
-print(glue::glue("Identifying NA responses..."))
+print(glue::glue("Identifying NA responses..."))        # TODO ----
 map_na <- map %>% 
   filter(X5 != "--")
-var_na <- map_na[["X1"]] 
+var_na <- map_na[["X1"]]
 
 
 print(glue::glue("Replacing outlier responses with NA entries..."))
@@ -118,7 +129,7 @@ if (length(var_outlier) > 0){
     summary[i, "count below -3SD"] <- nrow(filter(d_01, d_01[, var] < mean_ - 3*sd_))
     summary[i, "count above +3SD"] <- nrow(filter(d_01, d_01[, var] > mean_ + 3*sd_))
     
-    d_01[, var] <- ifelse(d_01[, var] < th1_ | d_01[, var] > th2_, NA, d_01[, var])
+    d_01[, var] <- ifelse(d_01[, var] < th1_ | d_01[, var] > th2_, 99999999, d_01[, var])
     setTxtProgressBar(pb, i)
   }
   close(pb)
