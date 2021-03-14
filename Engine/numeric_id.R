@@ -17,14 +17,15 @@ error = f_libraries(
   necessary.std = c("dplyr", "stringr"),
   necessary.github = c()
 )
-print(error)
-print("==============================================")
+print(glue::glue("RUNNING R SERVER ..."))
+print(glue::glue("Package status: {error}"))
+print(glue::glue("=============================================="))
 #====================================================
 
 summary <- data.frame(matrix(ncol = 3, nrow = 0))
 colnames(summary) <- c("variable", "value", "n")
 pb <- txtProgressBar(min = 1, max = ncol(d_01), style = 3, width = 40)
-print("Checking the raw data columns for atleast one numeric value ...")
+print(glue::glue("Checking columns for one or more numeric responses..."))
 i = 0
 
 for (var in colnames(d_01)) {

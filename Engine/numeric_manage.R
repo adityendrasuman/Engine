@@ -17,21 +17,48 @@ error = f_libraries(
   necessary.std = c("glue", "dplyr"),
   necessary.github = c()
 )
-print(error)
+print(glue::glue("RUNNING R SERVER..."))
+print(glue::glue("Package status: {error}"))
+print(glue::glue("=============================================="))
 #====================================================
 
+print(glue::glue("Picking inputs on numeric columns from the excel interface..."))
 map <- openxlsx::read.xlsx(g_file_path, namedRegion = "body_numeric", colNames = F) %>% 
-  unique()
+  unique()%>% 
+  filter_all(any_vars(!is.na(.)))
 
-print("Ensuring all numerics are logged correctly ...")
+print(glue::glue("Ensuring all numeric columns are logged correctly..."))
 
 numb <- map %>% 
   filter(X2 == "Yes")
 var_numeric <- numb[["X1"]]
 
+temp_data <- d_01
+
 if (length(var_numeric) > 0){
   for (var in var_numeric){
-    d_01[,var] = as.numeric(d_01[,var])
+    tryCatch(
+      {
+        # try part
+        d_01[,var] = as.numeric(d_01[,var])
+      },
+      
+      warning = function(w){
+        print(glue::glue("Warning generated while translating '{var}' as numeric"))
+        print(glue::glue("Unique values in column '{var}':"))
+        temp_data %>% 
+          select(var) %>%
+          table() %>% 
+          as.data.frame() %>% 
+          select(Value = 1, Freq) %>% 
+          print()
+        return(NULL)
+      },
+      
+      finally={
+        d_01[,var] = as.numeric(d_01[,var])
+      }
+    )
   }
 }
 
@@ -45,13 +72,13 @@ if (length(var_char) > 0){
   }
 }
 
-print("Replacing NA ...")
+print(glue::glue("Identifying NA responses..."))
 map_na <- map %>% 
   filter(X5 != "--")
-var_na <- map_na[["X1"]]  
+var_na <- map_na[["X1"]] 
 
 
-print("Removing outliers ...")
+print(glue::glue("Replacing outlier responses with NA entries..."))
 
 outlier <- map %>% 
   filter(X2 == "Yes") %>% 
@@ -79,7 +106,7 @@ if (length(var_outlier) > 0){
     th2_     <- as.numeric(outlier[outlier$X1 == var, "X4"])
     
     summary[i, "var"] <- var
-    summary[i, "Threshold"] <- glue::glue("{th1_} - {th2_}")
+    summary[i, "# Values"] <- nrow(filter(d_01, !is.na(d_01[, var])))
     summary[i, "# NAed"] <- nrow(filter(d_01, d_01[, var] < th1_)) + nrow(filter(d_01, d_01[, var] > th2_))
     summary[i, "% NAed"] <- paste0(round(100*summary[i, "# NAed"]/nrow(filter(d_01, !is.na(d_01[, var]))),2), "%")
     summary[i, "min"] <- round(min_, 2)
