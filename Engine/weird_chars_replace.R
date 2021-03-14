@@ -17,7 +17,9 @@ error = f_libraries(
   necessary.std = c("dplyr", "stringr", "openxlsx"),
   necessary.github = c()
 )
-print(error)
+print(glue::glue("RUNNING R SERVER ..."))
+print(glue::glue("Package status: {error}"))
+print(glue::glue("=============================================="))
 #====================================================
 
 map <- openxlsx::read.xlsx(g_file_path, namedRegion = "wc3_R", colNames = F) %>% 
@@ -25,7 +27,7 @@ map <- openxlsx::read.xlsx(g_file_path, namedRegion = "wc3_R", colNames = F) %>%
 
 i = 0
 pb <- txtProgressBar(min = 1, max = ncol(d_01), style = 3, width = 40)
-print("Replacing weird characters...")
+print(glue::glue("Replacing weird characters..."))
 
 for (var in colnames(d_01)){
   for (name in map[,"X1"]){
@@ -42,13 +44,14 @@ close(pb)
 supplied_weird_chr <- openxlsx::read.xlsx(g_file_path, namedRegion = "wc1_R", colNames = F)
 weird_chr <- paste(c("[^\x01-\x7F]", supplied_weird_chr[[1]]), collapse = "|")
 
+print(glue::glue("Double checking..."))
 summary <- f_id_char(d_01, weird_chr)
 
 if(is.null(nrow(summary))) {
-  print("No weird characters")
+  print(glue::glue("Any occurance of weird characters has been replaced"))
 } else if(nrow(summary) > 0) {
-  print("Weird characters could not be removed...")
-  print("Please remove manually in the raw data")
+  print(glue::glue("All occurances of weird characters could not be removed"))
+  print(glue::glue("Please remove manually in the raw data and upload it again"))
 }
 
 Sys.sleep(3)

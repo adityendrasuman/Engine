@@ -23,8 +23,7 @@ print(glue::glue("=============================================="))
 #====================================================
 
 print("Importing raw data ...")
-d_00 <- openxlsx::read.xlsx(g_file_path, namedRegion = "raw_data", colNames = T)
-d_01 <- d_00
+d_01 <- openxlsx::read.xlsx(g_file_path, namedRegion = "raw_data", colNames = T)
 print(glue::glue("Imported data has {ncol(d_01)} columns and {nrow(d_01)} rows"))
 
 Sys.sleep(3)

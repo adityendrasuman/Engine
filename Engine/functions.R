@@ -38,6 +38,8 @@ f_libraries <- function(necessary.std, necessary.github){
 # ID ANY GIVEN REGEX CHARECTER IN ALL THE COLUMNS OF THE DATA
 f_id_char <- function(data, search_chr){
   
+  options(dplyr.summarise.inform = FALSE)
+  
   summary <- matrix(ncol=2,nrow=0) %>% 
     data.frame() %>% 
     select(var_name = 1, freq = 2)
@@ -68,7 +70,7 @@ f_id_char <- function(data, search_chr){
   if (nrow(summary) > 0) {
     summary <- summary %>% 
       dplyr::group_by(var_name) %>% 
-      dplyr::summarise(tot_occurance = sum(freq, na.rm = T), .group = 'drop') %>% 
+      dplyr::summarise(tot_occurance = sum(freq, na.rm = T)) %>%
       data.frame() %>% 
       select(var_name)
     return(summary)
@@ -223,6 +225,8 @@ f_pad_lines <- function(str, n){
 
 f_graph_1 <- function(.answer, x_all, x_label = "", y_label = "", condition = "", numeric_y){
   
+  options(dplyr.summarise.inform = FALSE)
+  
   width_x_label = 10
   width_facet_label = 20
   font_value_label = 8
@@ -280,7 +284,7 @@ f_graph_1 <- function(.answer, x_all, x_label = "", y_label = "", condition = ""
   n_size <- .answer %>%
     filter(if (len >= 1) group != "Overall" else T) %>% 
     dplyr::group_by(group) %>% 
-    dplyr::summarise(n = sum(N), .groups = 'drop') %>% 
+    dplyr::summarise(n = sum(N)) %>% 
     mutate(n = paste0("(n = ", scales::comma(n, accuracy = 1), ")"))
   
   .data <- .answer %>% 
@@ -932,3 +936,6 @@ welch_ttest <- function(m1,
   
   return(dat)
 }
+
+
+
