@@ -23,7 +23,9 @@ print(glue::glue("=============================================="))
 #====================================================
 
 print(glue::glue("Picking suggestions for weird characters from the excel interface..."))
-supplied_weird_chr <- openxlsx::read.xlsx(g_file_path, namedRegion = "wc1_R", colNames = F)
+supplied_weird_chr <- openxlsx::read.xlsx(g_file_path, namedRegion = "wc1_R", colNames = F) %>% 
+  select(1) %>% 
+  filter_all(any_vars(!is.na(.)))
 
 weird_chr <- paste(c("[^\x01-\x7F]", supplied_weird_chr[[1]]), collapse = "|")
 

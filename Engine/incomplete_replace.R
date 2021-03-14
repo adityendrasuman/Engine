@@ -25,7 +25,8 @@ print(glue::glue("=============================================="))
 print(glue::glue("Picking mapping for incomplete responses from the excel interface..."))
 map <- openxlsx::read.xlsx(g_file_path, namedRegion = "incomplete_R", colNames = F) %>% 
   filter(X3 != "--") %>% 
-  unique()
+  unique() %>% 
+  filter_all(any_vars(!is.na(.)))
 
 if (nrow(map) == 0){
   print(glue::glue("Your input indicates no incomlete response"))

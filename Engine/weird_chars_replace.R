@@ -24,7 +24,8 @@ print(glue::glue("=============================================="))
 
 print(glue::glue("Picking mapping for weird characters from the excel interface..."))
 map <- openxlsx::read.xlsx(g_file_path, namedRegion = "wc3_R", colNames = F) %>% 
-  unique()
+  unique() %>% 
+  filter_all(any_vars(!is.na(.)))
 
 i = 0
 pb <- txtProgressBar(min = 1, max = ncol(d_01), style = 3, width = 40)
