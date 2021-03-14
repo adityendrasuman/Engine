@@ -67,8 +67,8 @@ f_id_char <- function(data, search_chr){
   
   if (nrow(summary) > 0) {
     summary <- summary %>% 
-      group_by(var_name) %>% 
-      summarise(tot_occurance = sum(freq, na.rm = T)) %>% 
+      dplyr::group_by(var_name) %>% 
+      dplyr::summarise(tot_occurance = sum(freq, na.rm = T), .group = 'drop') %>% 
       data.frame() %>% 
       select(var_name)
     return(summary)
@@ -279,8 +279,8 @@ f_graph_1 <- function(.answer, x_all, x_label = "", y_label = "", condition = ""
   
   n_size <- .answer %>%
     filter(if (len >= 1) group != "Overall" else T) %>% 
-    group_by(group) %>% 
-    summarise(n = sum(N), .groups = 'drop') %>% 
+    dplyr::group_by(group) %>% 
+    dplyr::summarise(n = sum(N), .groups = 'drop') %>% 
     mutate(n = paste0("(n = ", scales::comma(n, accuracy = 1), ")"))
   
   .data <- .answer %>% 
@@ -932,6 +932,3 @@ welch_ttest <- function(m1,
   
   return(dat)
 }
-
-
-
