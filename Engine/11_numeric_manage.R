@@ -14,7 +14,7 @@ load("env.RData")
 
 # load librarise ----
 error = f_libraries(
-  necessary.std = c("glue", "dplyr", "rlang"),
+  necessary.std = c("glue", "dplyr", "rlang", "stringr"),
   necessary.github = c()
 )
 print(glue::glue("RUNNING R SERVER..."))
@@ -47,10 +47,9 @@ if (length(var_numeric) > 0){
       },
       warning = function(w){
         # catch part
-        print(glue::glue("Warning generated while translating '{var}' as numeric: {w}"))
-        print(glue::glue("!! Values in numeric column '{var}' that generated 'NA':"))
-        temp_data %>% 
-          select(var) %>%
+        print(glue::glue("!! String values in numeric column '{var}' that will generate 'NA':"))
+        d_01_C %>% 
+          select(all_of(var)) %>%
           table() %>% 
           as.data.frame() %>% 
           select(Value = 1, Freq) %>% 
@@ -61,9 +60,9 @@ if (length(var_numeric) > 0){
         return(NULL)
       },
       finally={
-        # do part
+        # do part - replace all such string response with octa-9 and blanks with NA
         d_01_C <- d_01_C %>% 
-          mutate(!!var_sym := ifelse(str_detect(!!var_sym, "^[+-]?(\\d*\\.?\\d+|\\d+\\.?\\d*)$", negate = T) &
+          mutate(!!var_sym := ifelse(stringr::str_detect(!!var_sym, "^[+-]?(\\d*\\.?\\d+|\\d+\\.?\\d*)$", negate = T) &
                                      stringr::str_detect(!!var_sym, "^\\s*$", negate = T), "99999999", !!var_sym))
         
         d_01_C[,var] <- as.numeric(d_01_C[,var]) %>%
@@ -72,6 +71,8 @@ if (length(var_numeric) > 0){
     )
   }
 }
+
+print(glue::glue("Ensuring all string columns with one or more numeric response are logged correctly..."))
 
 char <- map %>% 
   filter(X2 == "No")
@@ -83,20 +84,41 @@ if (length(var_char) > 0){
   }
 }
 
-print(glue::glue("Identifying NA responses..."))        # TODO ----
+print(glue::glue("Identifying NA responses..."))        
 map_na <- map %>% 
-  filter(X5 != "~")
+  filter(X5 != "~") %>% 
+  mutate(na_values = paste0("c(", str_replace_all(trimws(X5), " \\| ", ", "), ")")) %>% 
+  select(X1, na_values)
+
 var_na <- map_na[["X1"]]
 
+if (length(var_na) > 0){
+  for (var in var_na){
+    
+    var_sym <- var %>% 
+      rlang::sym()
+      
+    condn <- map_na %>% 
+      filter(X1 == var) %>% 
+      pull(na_values)
+    
+    condn <- paste0(var, " %in% ", condn)
+    
+    d_01_C <- d_01_C %>% 
+      mutate(!!var_sym := ifelse(eval(parse(text=condn)), 99999999, !!var_sym))
+  }
+}
 
 print(glue::glue("Replacing outlier responses with NA entries..."))
 
-outlier <- map %>% 
-  filter(X2 == "Yes") %>% 
+map_outlier <- map %>% 
+  filter(X2 == "Yes") %>%
   mutate(X3 = ifelse(X3 == "~", -1000000000000000, X3),
          X4 = ifelse(X4 == "~", 1000000000000000, X4))
 
-var_outlier <- outlier[["X1"]]
+var_outlier <- map_outlier[["X1"]]
+
+d_01_Octa9 <- d_01_C
 
 if (length(var_outlier) > 0){
   
@@ -108,28 +130,67 @@ if (length(var_outlier) > 0){
     
     var <- var_outlier[i]
     
-    min_    <- min(d_01_C[, var], na.rm = T)
+    var_sym <- var %>% rlang::sym()
+    
+    condn <- map_na %>% 
+      filter(X1 == var) %>% 
+      pull(na_values)
+    
+    condn <- ifelse(is_empty(condn), "F", paste0(var, " %in% ", condn))
+    
+    d_01_Octa9[, var] <- ifelse(d_01_Octa9[, var] < th1_ | d_01_Octa9[, var] > th2_, 99999999, d_01_Octa9[, var])
+    
+    d_01_C[, var] <- ifelse(d_01_Octa9[, var] == 99999999, NA, d_01_Octa9[, var])
+    
+    min_    <- min(d_01_C[, var], na.rm = T) %>% suppressWarnings()
     mean_   <- mean(d_01_C[, var], na.rm = T)
     median_ <- median(d_01_C[, var], na.rm = T)
-    max_    <- max(d_01_C[, var], na.rm = T)
+    max_    <- max(d_01_C[, var], na.rm = T) %>% suppressWarnings()
     sd_     <- sd(d_01_C[, var], na.rm = T)
-    th1_     <- as.numeric(outlier[outlier$X1 == var, "X3"])
-    th2_     <- as.numeric(outlier[outlier$X1 == var, "X4"])
+    th1_     <- as.numeric(map_outlier[map_outlier$X1 == var, "X3"])
+    th2_     <- as.numeric(map_outlier[map_outlier$X1 == var, "X4"])
     
     summary[i, "var"] <- var
-    summary[i, "# Values"] <- nrow(filter(d_01_C, !is.na(d_01_C[, var])))
-    summary[i, "# NAed"] <- nrow(filter(d_01_C, d_01_C[, var] < th1_)) + nrow(filter(d_01_C, d_01_C[, var] > th2_))
-    summary[i, "% NAed"] <- paste0(round(100*summary[i, "# NAed"]/nrow(filter(d_01_C, !is.na(d_01_C[, var]))),2), "%")
+    
+    summary[i, "# Values"] <- d_01_Octa9 %>% 
+      filter(!is.na(var)) %>%
+      filter(var != "") %>% 
+      nrow()
+      
+    summary[i, "# NAed (non-numeric)"] <- d_01_B %>% 
+      filter(stringr::str_detect(!!var_sym, "^[+-]?(\\d*\\.?\\d+|\\d+\\.?\\d*)$", negate = T), 
+             stringr::str_detect(!!var_sym, "^\\s*$", negate = T)) %>% 
+      nrow()
+      
+    summary[i, "# NAed (NA proxies)"] <- d_01_B %>% 
+      filter(eval(parse(text=condn))) %>% 
+      nrow()
+    
+    summary[i, "# NAed (threshold)"] <- d_01_Octa9 %>% 
+      filter(!!var_sym != 99999999) %>% 
+      filter(!!var_sym < th1_ | !!var_sym > th2_) %>% 
+      nrow()
+    
+    summary[i, "% NAed"] <- paste0(round(100*(summary[i, "# NAed (non-numeric)"] +
+                                                summary[i, "# NAed (NA proxies)"] +
+                                                summary[i, "# NAed (threshold)"])/summary[i, "# Values"], 2), " %")
+      
+    
     summary[i, "min"] <- round(min_, 2)
-    summary[i, "mean - 3 SD"] <- round(mean_ - 3*sd_, 2)
     summary[i, "mean"] <- round(mean_, 2)
     summary[i, "median"] <- round(median_, 2)
-    summary[i, "mean + 3 SD"] <- round(mean_ + 3*sd_, 2)
     summary[i, "max"] <- round(max_, 2)
-    summary[i, "count below -3SD"] <- nrow(filter(d_01_C, d_01_C[, var] < mean_ - 3*sd_))
-    summary[i, "count above +3SD"] <- nrow(filter(d_01_C, d_01_C[, var] > mean_ + 3*sd_))
     
-    d_01_C[, var] <- ifelse(d_01_C[, var] < th1_ | d_01_C[, var] > th2_, 99999999, d_01_C[, var])
+    summary[i, "count below -3SD"] <- d_01_Octa9 %>% 
+      filter(!!var_sym != 99999999) %>% 
+      filter(!!var_sym < mean_ - 3*sd_) %>% 
+      nrow()
+    
+    summary[i, "count above +3SD"] <- d_01_Octa9 %>% 
+      filter(!!var_sym != 99999999) %>% 
+      filter(!!var_sym > mean_ + 3*sd_) %>% 
+      nrow()
+      
     setTxtProgressBar(pb, i)
   }
   close(pb)
@@ -140,19 +201,12 @@ if (length(var_outlier) > 0){
   }
 }
 
-
 Sys.sleep(5)
 
 #====================================================
 
 # Acknowledgement of run ----
 log_file = "log - numeric_manage.txt"
-unlink(log_file)
-cat("... Run completed", file=log_file, sep="\n", append=TRUE)
-cat(glue::glue("environment contains: {sapply(ls(pattern = '^(d_|g_|f_)'), toString)}"), 
-    file=log_file, sep="\n", append=TRUE)
-cat(glue::glue("error: {error}"), file=log_file, sep="\n", append=TRUE)
-# shell.exec(log_file)
 
 # remove unnecessary variables from environment ----
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
