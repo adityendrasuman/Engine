@@ -27,13 +27,13 @@ map <- openxlsx::read.xlsx(g_file_path, namedRegion = "body_numeric", colNames =
   unique()%>% 
   filter_all(any_vars(!is.na(.)))
 
+d_01_C <- d_01_B
+
 print(glue::glue("Ensuring all numeric columns are logged correctly..."))
 
 numb <- map %>% 
   filter(X2 == "Yes")
 var_numeric <- numb[["X1"]]
-
-d_01_non_na <- d_01
 
 if (length(var_numeric) > 0){
   for (var in var_numeric){
@@ -43,7 +43,7 @@ if (length(var_numeric) > 0){
     tryCatch(
       {
         # try part
-        d_01[,var] = as.numeric(d_01[,var])
+        d_01_C[,var] = as.numeric(d_01_C[,var])
       },
       warning = function(w){
         # catch part
@@ -62,11 +62,11 @@ if (length(var_numeric) > 0){
       },
       finally={
         # do part
-        d_01 <- d_01 %>% 
+        d_01_C <- d_01_C %>% 
           mutate(!!var_sym := ifelse(str_detect(!!var_sym, "^[+-]?(\\d*\\.?\\d+|\\d+\\.?\\d*)$", negate = T) &
                                      stringr::str_detect(!!var_sym, "^\\s*$", negate = T), "99999999", !!var_sym))
         
-        d_01[,var] <- as.numeric(d_01[,var]) %>%
+        d_01_C[,var] <- as.numeric(d_01_C[,var]) %>%
           suppressWarnings()
       }
     )
@@ -79,7 +79,7 @@ var_char <- char[["X1"]]
 
 if (length(var_char) > 0){
   for (var in var_char){
-    d_01[,var] = as.character(d_01[,var])
+    d_01_C[,var] = as.character(d_01_C[,var])
   }
 }
 
@@ -108,28 +108,28 @@ if (length(var_outlier) > 0){
     
     var <- var_outlier[i]
     
-    min_    <- min(d_01[, var], na.rm = T)
-    mean_   <- mean(d_01[, var], na.rm = T)
-    median_ <- median(d_01[, var], na.rm = T)
-    max_    <- max(d_01[, var], na.rm = T)
-    sd_     <- sd(d_01[, var], na.rm = T)
+    min_    <- min(d_01_C[, var], na.rm = T)
+    mean_   <- mean(d_01_C[, var], na.rm = T)
+    median_ <- median(d_01_C[, var], na.rm = T)
+    max_    <- max(d_01_C[, var], na.rm = T)
+    sd_     <- sd(d_01_C[, var], na.rm = T)
     th1_     <- as.numeric(outlier[outlier$X1 == var, "X3"])
     th2_     <- as.numeric(outlier[outlier$X1 == var, "X4"])
     
     summary[i, "var"] <- var
-    summary[i, "# Values"] <- nrow(filter(d_01, !is.na(d_01[, var])))
-    summary[i, "# NAed"] <- nrow(filter(d_01, d_01[, var] < th1_)) + nrow(filter(d_01, d_01[, var] > th2_))
-    summary[i, "% NAed"] <- paste0(round(100*summary[i, "# NAed"]/nrow(filter(d_01, !is.na(d_01[, var]))),2), "%")
+    summary[i, "# Values"] <- nrow(filter(d_01_C, !is.na(d_01_C[, var])))
+    summary[i, "# NAed"] <- nrow(filter(d_01_C, d_01_C[, var] < th1_)) + nrow(filter(d_01_C, d_01_C[, var] > th2_))
+    summary[i, "% NAed"] <- paste0(round(100*summary[i, "# NAed"]/nrow(filter(d_01_C, !is.na(d_01_C[, var]))),2), "%")
     summary[i, "min"] <- round(min_, 2)
     summary[i, "mean - 3 SD"] <- round(mean_ - 3*sd_, 2)
     summary[i, "mean"] <- round(mean_, 2)
     summary[i, "median"] <- round(median_, 2)
     summary[i, "mean + 3 SD"] <- round(mean_ + 3*sd_, 2)
     summary[i, "max"] <- round(max_, 2)
-    summary[i, "count below -3SD"] <- nrow(filter(d_01, d_01[, var] < mean_ - 3*sd_))
-    summary[i, "count above +3SD"] <- nrow(filter(d_01, d_01[, var] > mean_ + 3*sd_))
+    summary[i, "count below -3SD"] <- nrow(filter(d_01_C, d_01_C[, var] < mean_ - 3*sd_))
+    summary[i, "count above +3SD"] <- nrow(filter(d_01_C, d_01_C[, var] > mean_ + 3*sd_))
     
-    d_01[, var] <- ifelse(d_01[, var] < th1_ | d_01[, var] > th2_, 99999999, d_01[, var])
+    d_01_C[, var] <- ifelse(d_01_C[, var] < th1_ | d_01_C[, var] > th2_, 99999999, d_01_C[, var])
     setTxtProgressBar(pb, i)
   }
   close(pb)

@@ -24,18 +24,18 @@ print(glue::glue("=============================================="))
 
 print(glue::glue("Searching for strings with over 30 characters..."))
 
-list_of_variables <- d_01 %>%
+list_of_variables <- d_01_A %>%
   colnames()
 
 summary <- purrr::map_dfr(list_of_variables, function(var) {
   
-  temp <- d_01 %>%
+  temp <- d_01_A %>%
     pull(!!var) %>%
     nchar() %>%
     max(na.rm = TRUE)
   
   if (temp >= 30) {
-    d_01 %>%
+    d_01_A %>%
       select(response = !!var) %>%
       count(response) %>%
       mutate(no_of_char = nchar(response),

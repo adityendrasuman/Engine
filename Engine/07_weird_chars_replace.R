@@ -27,16 +27,18 @@ map <- openxlsx::read.xlsx(g_file_path, namedRegion = "wc3_R", colNames = F) %>%
   unique() %>% 
   filter_all(any_vars(!is.na(.)))
 
+d_01_A <- d_01
+
 i = 0
-pb <- txtProgressBar(min = 1, max = ncol(d_01), style = 3, width = 40)
+pb <- txtProgressBar(min = 1, max = ncol(d_01_A), style = 3, width = 40)
 print(glue::glue("Replacing weird characters..."))
 
-for (var in colnames(d_01)){
+for (var in colnames(d_01_A)){
   for (name in map[,"X1"]){
     
     value <- map[map$X1 == name, "X2"]
       
-    d_01[, var] <- gsub(name, value, d_01[, var])  
+    d_01_A[, var] <- gsub(name, value, d_01_A[, var])  
   }
   i = i + 1
   setTxtProgressBar(pb, i)
@@ -46,7 +48,7 @@ close(pb)
 print(glue::glue("Double checking..."))
 supplied_weird_chr <- openxlsx::read.xlsx(g_file_path, namedRegion = "wc1_R", colNames = F)
 weird_chr <- paste(c("[^\x01-\x7F]", supplied_weird_chr[[1]]), collapse = "|")
-summary <- f_id_char(d_01, weird_chr)
+summary <- f_id_char(d_01_A, weird_chr)
 
 if(is.null(nrow(summary))) {
   print(glue::glue("Any occurance of weird characters has been replaced"))

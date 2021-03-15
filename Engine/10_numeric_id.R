@@ -24,12 +24,12 @@ print(glue::glue("=============================================="))
 
 summary <- data.frame(matrix(ncol = 3, nrow = 0))
 colnames(summary) <- c("variable", "value", "n")
-pb <- txtProgressBar(min = 1, max = ncol(d_01), style = 3, width = 40)
+pb <- txtProgressBar(min = 1, max = ncol(d_01_B), style = 3, width = 40)
 print(glue::glue("Checking columns for one or more numeric responses..."))
 i = 0
 
-for (var in colnames(d_01)) {
-  summary <- d_01 %>%
+for (var in colnames(d_01_B)) {
+  summary <- d_01_B %>%
     select(all_of(var)) %>%
     group_by_all() %>% 
     count() %>% 

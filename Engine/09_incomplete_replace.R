@@ -28,6 +28,8 @@ map <- openxlsx::read.xlsx(g_file_path, namedRegion = "incomplete_R", colNames =
   unique() %>% 
   filter_all(any_vars(!is.na(.)))
 
+d_01_B <- d_01_A 
+
 if (nrow(map) == 0){
   print(glue::glue("Your input indicates no incomlete response"))
 } else {
@@ -41,20 +43,20 @@ if (nrow(map) == 0){
     
     for (name in names[[1]]){
       
-      n_row_old <- d_01 %>% 
+      n_row_old <- d_01_B %>% 
         select(var) %>% 
         filter(!!rlang::sym(var) == name) %>% 
         nrow()
       
       value <- map[map$X2 == name, "X3"]
-      d_01[, var] <- ifelse(d_01[, var] == name, value, d_01[, var])
+      d_01_B[, var] <- ifelse(d_01_B[, var] == name, value, d_01_B[, var])
       
-      n_row_old_after <- d_01 %>% 
+      n_row_old_after <- d_01_B %>% 
         select(var) %>% 
         filter(!!rlang::sym(var) == name) %>% 
         nrow()
       
-      n_row_new <- d_01 %>% 
+      n_row_new <- d_01_B %>% 
         select(var) %>% 
         filter(!!rlang::sym(var) == value) %>% 
         nrow()
