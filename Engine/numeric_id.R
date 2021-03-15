@@ -53,9 +53,9 @@ summary <- summary %>%
 
 summary %>% 
   mutate(is_numeric = "Yes",
-         outlier_min = "--",
-         outlier_max = "--",
-         na_values = "--") %>% 
+         outlier_min = "~",
+         outlier_max = "~",
+         na_values = "~") %>% 
   write.table(file = file.path("temp.csv"), sep=",", col.names = F, row.names = F)
 
 Sys.sleep(0)

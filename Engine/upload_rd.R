@@ -14,7 +14,7 @@ load("env.RData")
 
 # load librarise ----
 error = f_libraries(
-  necessary.std = c("dplyr", "purrr", "stringr"),
+  necessary.std = c("openxlsx", "glue"),
   necessary.github = c()
 )
 print(glue::glue("RUNNING R SERVER ..."))
@@ -22,46 +22,15 @@ print(glue::glue("Package status: {error}"))
 print(glue::glue("=============================================="))
 #====================================================
 
-print(glue::glue("Searching for strings with over 30 characters..."))
+print(glue::glue("Importing raw data from the excel interface..."))
+d_01 <- openxlsx::read.xlsx(g_file_path, namedRegion = "raw_data", colNames = T)
+print(glue::glue("Imported data has {ncol(d_01)} columns and {nrow(d_01)} rows"))
 
-list_of_variables <- d_01 %>%
-  colnames()
-
-summary <- purrr::map_dfr(list_of_variables, function(var) {
-  
-  temp <- d_01 %>%
-    pull(!!var) %>%
-    nchar() %>%
-    max(na.rm = TRUE)
-  
-  if (temp >= 30) {
-    d_01 %>%
-      select(response = !!var) %>%
-      count(response) %>%
-      mutate(no_of_char = nchar(response),
-             variable = var) %>%
-      filter(no_of_char >= 30) %>%
-      select(-n) %>%
-      return()
-  }
-}) %>%
-  select(variable, everything()) %>% 
-  arrange(-no_of_char) %>%
-  select(variable, response) %>%
-  mutate(replacement = "~") %>% 
-  filter(!stringr::str_detect(variable, "(_OTH|_OE)$"))
-
-if (nrow(summary) > 0) {
-  summary %>% 
-    write.table(file = file.path("temp.csv"), sep=",", col.names = F, row.names = F)
-}
-
-Sys.sleep(0)
-
+Sys.sleep(3)
 #====================================================
 
 # Acknowledgement of run ----
-log_file = "log - incomplete.txt"
+log_file = "log - upload.txt"
 unlink(log_file)
 cat("... Run completed", file=log_file, sep="\n", append=TRUE)
 cat(glue::glue("environment contains: {sapply(ls(pattern = '^(d_|g_|f_)'), toString)}"), 

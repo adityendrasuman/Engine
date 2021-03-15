@@ -9,6 +9,8 @@ args <- commandArgs(trailingOnly=T)
 # set working director ---- 
 setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
 
+load("env.RData")
+
 # load custom functions ----
 source(do.call(file.path, as.list(strsplit(paste0(args[2], "functions.R"), "\\|")[[1]])), 
        print.eval = TRUE, echo = F)
@@ -31,7 +33,10 @@ g_file_name                         <- args[5]
 g_file_path                         <- file.path(g_excel_frontend_dir, g_file_name)
 g_wd                                <- g_excel_backend_temp_dir
 
-Sys.sleep(1)
+g_file_log                          <- file.path(g_excel_frontend_dir, "Latest logs.txt")
+g_file_plot                         <- file.path(g_excel_frontend_dir, "Latest plots.pdf")
+
+Sys.sleep(0)
 #====================================================
 
 # Acknowledgement of run ----

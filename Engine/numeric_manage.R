@@ -85,7 +85,7 @@ if (length(var_char) > 0){
 
 print(glue::glue("Identifying NA responses..."))        # TODO ----
 map_na <- map %>% 
-  filter(X5 != "--")
+  filter(X5 != "~")
 var_na <- map_na[["X1"]]
 
 
@@ -93,8 +93,8 @@ print(glue::glue("Replacing outlier responses with NA entries..."))
 
 outlier <- map %>% 
   filter(X2 == "Yes") %>% 
-  mutate(X3 = ifelse(X3 == "--", -1000000000000000, X3),
-         X4 = ifelse(X4 == "--", 1000000000000000, X4))
+  mutate(X3 = ifelse(X3 == "~", -1000000000000000, X3),
+         X4 = ifelse(X4 == "~", 1000000000000000, X4))
 
 var_outlier <- outlier[["X1"]]
 
