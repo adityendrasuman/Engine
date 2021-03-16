@@ -130,6 +130,9 @@ if (length(var_outlier) > 0){
     
     var <- var_outlier[i]
     
+    th1_     <- as.numeric(map_outlier[map_outlier$X1 == var, "X3"])
+    th2_     <- as.numeric(map_outlier[map_outlier$X1 == var, "X4"])
+    
     var_sym <- var %>% rlang::sym()
     
     condn <- map_na %>% 
@@ -147,13 +150,11 @@ if (length(var_outlier) > 0){
     median_ <- median(d_01_C[, var], na.rm = T)
     max_    <- max(d_01_C[, var], na.rm = T) %>% suppressWarnings()
     sd_     <- sd(d_01_C[, var], na.rm = T)
-    th1_     <- as.numeric(map_outlier[map_outlier$X1 == var, "X3"])
-    th2_     <- as.numeric(map_outlier[map_outlier$X1 == var, "X4"])
     
     summary[i, "var"] <- var
     
     summary[i, "# Values"] <- d_01_Octa9 %>% 
-      filter(!is.na(var)) %>%
+      filter(!is.na(!!var_sym)) %>%
       filter(var != "") %>% 
       nrow()
       
@@ -175,7 +176,6 @@ if (length(var_outlier) > 0){
                                                 summary[i, "# NAed (NA proxies)"] +
                                                 summary[i, "# NAed (threshold)"])/summary[i, "# Values"], 2), " %")
       
-    
     summary[i, "min"] <- round(min_, 2)
     summary[i, "mean"] <- round(mean_, 2)
     summary[i, "median"] <- round(median_, 2)
@@ -201,7 +201,7 @@ if (length(var_outlier) > 0){
   }
 }
 
-Sys.sleep(5)
+Sys.sleep(3)
 
 #====================================================
 
@@ -213,4 +213,3 @@ rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 
 # save environment in a session temp variable ----
 save.image(file=file.path(g_wd, "env.RData"))
-

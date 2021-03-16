@@ -44,7 +44,7 @@ if (nrow(map) == 0){
     for (name in names[[1]]){
       
       n_row_old <- d_01_B %>% 
-        select(var) %>% 
+        select(all_of(var)) %>% 
         filter(!!rlang::sym(var) == name) %>% 
         nrow()
       
@@ -77,13 +77,7 @@ Sys.sleep(5)
 #====================================================
 
 # Acknowledgement of run ----
-log_file = "log - weird_chars_replace.txt"
-unlink(log_file)
-cat("... Run completed", file=log_file, sep="\n", append=TRUE)
-cat(glue::glue("environment contains: {sapply(ls(pattern = '^(d_|g_|f_)'), toString)}"), 
-    file=log_file, sep="\n", append=TRUE)
-cat(glue::glue("error: {error}"), file=log_file, sep="\n", append=TRUE)
-# shell.exec(log_file)
+
 
 # remove unnecessary variables from environment ----
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
