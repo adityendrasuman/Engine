@@ -52,12 +52,12 @@ if (nrow(map) == 0){
       d_01_B[, var] <- ifelse(d_01_B[, var] == name, value, d_01_B[, var])
       
       n_row_old_after <- d_01_B %>% 
-        select(var) %>% 
+        select(all_of(var)) %>% 
         filter(!!rlang::sym(var) == name) %>% 
         nrow()
       
       n_row_new <- d_01_B %>% 
-        select(var) %>% 
+        select(all_of(var)) %>% 
         filter(!!rlang::sym(var) == value) %>% 
         nrow()
       
