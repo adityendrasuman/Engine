@@ -13,7 +13,7 @@ setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
 load("env.RData")
 
 # load custom functions ----
-source(do.call(file.path, as.list(strsplit(paste0(args[2], "functions.R"), "\\|")[[1]])), 
+source(do.call(file.path, as.list(strsplit(paste0(args[2], "00_functions.R"), "\\|")[[1]])), 
        print.eval = TRUE, echo = F)
 
 # load libraries ----

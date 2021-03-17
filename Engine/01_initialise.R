@@ -10,7 +10,7 @@ args <- commandArgs(trailingOnly=T)
 setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
 
 # load custom functions ----
-source(do.call(file.path, as.list(strsplit(paste0(args[2], "functions.R"), "\\|")[[1]])), 
+source(do.call(file.path, as.list(strsplit(paste0(args[2], "00_functions.R"), "\\|")[[1]])), 
        print.eval = TRUE, echo = F)
 
 # load librarise ----
