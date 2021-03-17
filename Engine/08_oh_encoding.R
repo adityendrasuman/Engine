@@ -15,114 +15,12 @@ load("env.RData")
 
 # load libraries ----
 error = f_libraries(
-  necessary.std = c("glue", "dplyr"),
+  necessary.std = c("glue", "dplyr", "stringr", "purrr"),
   necessary.github = c()
 )
 print(glue::glue("RUNNING R SERVER ..."))
 print(glue::glue("Package status: {error}"))
 print(glue::glue("=============================================="))
-#====================================================
-
-d_01_B <- d_01_A
-
-print(glue::glue("Importing 'Live Capture' column names from the excel interface..."))
-col_list <- openxlsx::read.xlsx(g_file_path, namedRegion = "body_OHE_input", colNames = F)
-
-col_list %>% nrow() %>% print()
-
-Sys.sleep(3)
-
-
-
-# vars <- clean_df_3 %>% 
-#   select(matches(".*_o[0-9]+$")) %>% 
-#   colnames()
-# 
-# vars_unique <- vars %>% 
-#   str_replace("_o[0-9]+$", "_o") %>% 
-#   unique()
-# 
-# pb <- txtProgressBar(min = 1, max = length(vars)+100, style = 3, width = 40)
-# print("creating one-hot encoding...")
-# j <- 1
-# 
-# for (var in vars_unique) {
-#   
-#   # create a variable temp_all_values in the main file that combines values from all relevant variables 
-#   
-#   table_with_relevant_cols <- clean_df_3 %>% 
-#     select(x_interview_id, matches(paste0(var, "[0-9]+$"))) %>% 
-#     mutate(temp_all_values = "")
-#   
-#   for (i in 1:(ncol(table_with_relevant_cols) - 2)){
-#     table_with_relevant_cols <- table_with_relevant_cols %>% 
-#       mutate(temp_all_values = paste0(temp_all_values, 
-#                                       ifelse(is.na(.[, i+1]) | .[, i+1] == "",
-#                                              "", paste0("|", make_col_names(.[, i+1]))
-#                                       )
-#       )
-#       )
-#   }
-#   
-#   table_with_relevant_cols <- table_with_relevant_cols %>% 
-#     select(x_interview_id, temp_all_values)
-#   
-#   clean_df_3 <- clean_df_3 %>%  
-#     left_join(table_with_relevant_cols, by = "x_interview_id")
-#   
-#   var_values <- clean_df_3 %>% 
-#     select(matches(paste0(var, "[0-9]+$"))) %>% 
-#     unlist() %>% 
-#     table() %>% 
-#     data.frame() %>% 
-#     select("value" = 1, "freq" = 2) %>% 
-#     filter(!is.na(value)) %>% 
-#     filter(value != "") %>% 
-#     filter(value != "{0}") %>% 
-#     mutate(value_colnames = make_col_names(value)) %>% 
-#     mutate(value = as.character(value))
-#   
-#   num_var_values <- var_values %>% 
-#     nrow()
-#   
-#   for (i in 1:num_var_values){
-#     
-#     var_new <- var %>% 
-#       paste0(i, "_", var_values[i, "value_colnames"]) %>% 
-#       str_replace("x_", "z_") %>% 
-#       rlang::sym()
-#     
-#     search_term = var_values[i, "value_colnames"]
-#     
-#     clean_df_3 <- clean_df_3 %>% 
-#       mutate(!!var_new := case_when(
-#         str_detect(temp_all_values, search_term) ~ "True",
-#         trimws((str_remove_all(temp_all_values, "|"))) != "" ~ "False",
-#         TRUE ~ ""
-#       )
-#       )
-#     
-#     setTxtProgressBar(pb, j)
-#     
-#     j = j + 1
-#   }
-#   
-#   summary <- clean_df_3 %>%
-#     select(temp_all_values, matches(str_replace(var, "x_", "z_"))) %>%
-#     grouper()
-#   
-#   colnames(summary) <- str_replace(colnames(summary), str_replace(var, "x_", "z_"), "")
-#   
-#   summary %>%
-#     logtable(as.character(var))
-#   
-#   clean_df_3 <- clean_df_3 %>% 
-#     select(-temp_all_values)
-# }
-# close(pb)
-
-
-#====================================================
 
 # Log of run ----
 cat(glue::glue("===================== Running '08_oh_encoding.R' ====================="), 
@@ -130,6 +28,154 @@ cat(glue::glue("===================== Running '08_oh_encoding.R' ===============
 
 cat(glue::glue("This code broke a list of 'Live-Capture' columns provided in the excel interface into constituent columns with Yes/No values"), 
     file=g_file_log, sep="\n", append=TRUE)
+
+#====================================================
+
+make_col_names <- function(vector) {
+  purrr::map_chr(vector, function(x) {
+    x %>%
+      tolower() %>%
+      str_replace_all("'", "") %>%
+      str_replace_all(",", "") %>%
+      str_replace_all("\\.", "") %>%
+      str_replace_all("\\(", "") %>%
+      str_replace_all("\\)", "") %>%
+      str_replace_all("\\\\", "_") %>%
+      str_replace_all("\\/", "_") %>%
+      str_replace_all("-", "_") %>%
+      str_replace_all("\\:", "") %>%
+      str_replace_all("\\s+", " ") %>%
+      str_replace_all(" ", "_") %>%
+      str_replace_all("_+", "_") %>%
+      trimws() %>% 
+      stringr::str_trim()
+  })
+}
+
+d_01_B <- d_01_A %>% 
+  mutate(temp_id = row_number())
+
+print(glue::glue("Importing 'Live Capture' column names from the excel interface..."))
+
+col_list <- openxlsx::read.xlsx(g_file_path, namedRegion = "body_OHE_input", colNames = F) %>% 
+  filter_all(any_vars(!is.na(.)))
+
+# Get column names and questions for OHE
+columns <- list()
+questions <- list()
+
+for (i in 1:nrow(col_list)){
+  
+  columns <- d_01_B %>% 
+    select(matches(col_list[i, 1])) %>% 
+    colnames() %>% 
+    c(columns) %>% 
+    unique()
+  
+  questions <- d_01_B %>% 
+    select(matches(col_list[i, 1])) %>% 
+    colnames() %>% 
+    stringr::str_extract(col_list[i, 2]) %>% 
+    c(questions) %>% 
+    unique()
+  
+}
+
+pb <- txtProgressBar(min = 0, max = length(columns), style = 3, width = 40)
+print(glue::glue("creating one-hot encoding..."))
+
+counter <- 0
+
+for (q in questions) {
+
+  # create a variable temp_all_values in the main file that combines values from all relevant variables
+
+  list_of_columns <- d_01_B %>%
+    select(matches(paste0("^.*", q, ".*$"))) %>%
+    colnames() %>% 
+    intersect(columns) %>% 
+    unlist()
+  
+  table_with_relevant_cols <- d_01_B %>%
+    select(temp_id, list_of_columns) %>%
+    mutate(temp_all_values = "") %>% 
+    colnames()
+    
+  for (i in 1:(ncol(table_with_relevant_cols) - 2)){
+    table_with_relevant_cols <- table_with_relevant_cols %>%
+      mutate(temp_all_values = paste0(temp_all_values,
+                                      ifelse(is.na(.[, i+1]) | .[, i+1] == "",
+                                             "", paste0("|", make_col_names(.[, i+1]))
+                                      )
+      )
+      )
+  }
+
+  table_with_relevant_cols <- table_with_relevant_cols %>%
+    select(temp_id, temp_all_values)
+
+  d_01_B <- d_01_B %>%
+    left_join(table_with_relevant_cols, by = "temp_id")
+
+  column_values <- d_01_B %>%
+    select(matches(paste0("^.*", q, ".*$"))) %>%
+    unlist() %>%
+    table() %>%
+    data.frame() %>%
+    select("value" = 1, "freq" = 2) %>%
+    filter(!is.na(value)) %>%
+    filter(value != "") %>%
+    filter(value != "{0}") %>%
+    mutate(value_colnames = make_col_names(value)) %>%
+    mutate(value = as.character(value))
+
+  num_column_values <- column_values %>%
+    nrow()
+  
+  len <- nchar(q)
+  last <- substr(q, len, len)
+  last2 <- substr(q, len - 1, len)
+  start <- ifelse(last == "_", "o", ifelse(last2 == "_o" | last == "_O", "", "_o"))
+  
+  for (j in 1:num_column_values){
+    
+    column_new <- paste0("z_", q, start, i, "_", column_values[i, "value_colnames"]) %>%
+      tolower() %>% 
+      rlang::sym()
+
+    search_term = column_values[i, "value_colnames"]
+
+    d_01_B <- d_01_B %>%
+      mutate(!!column_new := case_when(
+        str_detect(temp_all_values, search_term) ~ "Yes",
+        str_detect(temp_all_values, "^\\|*$") ~ NA_character_,
+        TRUE ~ "No"
+        )
+      )
+
+    counter = counter + 1
+    setTxtProgressBar(pb, counter)
+    
+  }
+
+  summary <- d_01_B %>%
+    select(list_of_columns, column_new) %>%
+    group_by_all() %>% 
+    count() %>% 
+    as.data.frame() %>%
+    logtable(paste0(as.character("OH encoding for: ", column)), g_file_log)
+
+  d_01_B <- d_01_B %>%
+    select(-temp_all_values)
+}
+
+d_01_B <- d_01_B %>%
+  select(-temp_id)
+
+close(pb)
+
+Sys.sleep(3)
+#====================================================
 
 total_time = Sys.time() - start_time
 cat(glue::glue("finished run in {round(total_time, 0)} secs"), 
