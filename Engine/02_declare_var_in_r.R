@@ -1,8 +1,8 @@
 # cleanup the environment ----
-start_time <- Sys.time()
 rm(list = ls())
 if (!is.null(dev.list())) dev.off()
 cat("\014")
+start_time <- Sys.time()
 
 # capture variable coming from vba ----
 args <- commandArgs(trailingOnly=T)
@@ -53,13 +53,12 @@ cat(glue::glue("===================== Running '02_declare_var_in_r.R' ==========
 cat(glue::glue("This will load the last saved environment and refresh all the global variables using latest excel"), 
     file=g_file_log, sep="\n", append=TRUE)
 
+total_time = Sys.time() - start_time
+cat(glue::glue("finished run in {round(total_time, 0)} secs"), 
+    file=g_file_log, sep="\n", append=TRUE)
+
 # remove unnecessary variables from environment ----
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 
 # save environment in a session temp variable ----
 save.image(file=file.path(g_wd, "env.RData"))
-
-# Log of time taken ----
-total_time = Sys.time() - start_time
-cat(glue::glue("finished run in {round(total_time, 0)} mins"), 
-    file=g_file_log, sep="\n", append=TRUE)
