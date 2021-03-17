@@ -26,6 +26,7 @@ print(glue::glue("=============================================="))
 print(glue::glue("Trimming whitespaces..."))
 cols_to_be_rectified <- names(d_01)[vapply(d_01, is.character, logical(1))]
 d_01[,cols_to_be_rectified] <- lapply(d_01[,cols_to_be_rectified], trimws)
+d_01[,cols_to_be_rectified] <- lapply(d_01[,cols_to_be_rectified], stringr::str_trim)
 
 whitespaces <- paste(c("^\\s+.+\\s+$", ".+\\s+$", "^\\s+.+$"), collapse = "|")
 summary <- f_id_char(d_01, whitespaces)
