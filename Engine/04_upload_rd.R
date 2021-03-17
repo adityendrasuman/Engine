@@ -34,11 +34,14 @@ Sys.sleep(3)
 cat(glue::glue("===================== Running '04_upload_rd.R' ====================="), 
     file=g_file_log, sep="\n", append=TRUE)
 
-cat(glue::glue("This code uploaded raw data into R"), 
+cat(glue::glue("This code uploads raw data into R"), 
     file=g_file_log, sep="\n", append=TRUE)
 
 total_time = Sys.time() - start_time
 cat(glue::glue("finished run in {round(total_time, 0)} secs"), 
+    file=g_file_log, sep="\n", append=TRUE)
+
+cat(glue::glue("\n"), 
     file=g_file_log, sep="\n", append=TRUE)
 
 # remove unnecessary variables from environment ----

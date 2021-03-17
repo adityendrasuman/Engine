@@ -2,6 +2,7 @@
 rm(list = ls())
 if (!is.null(dev.list())) dev.off()
 cat("\014")
+start_time <- Sys.time()
 
 # capture variable coming from vba ----
 args <- commandArgs(trailingOnly=T)
@@ -205,8 +206,19 @@ Sys.sleep(3)
 
 #====================================================
 
-# Acknowledgement of run ----
-log_file = "log - numeric_manage.txt"
+# Log of run ----
+cat(glue::glue("===================== Running '12_numeric_manage.R' ====================="), 
+    file=g_file_log, sep="\n", append=TRUE)
+
+cat(glue::glue("This code ensures that numeric columns are appropriately readable, removes NA values and outliers, and generates report"), 
+    file=g_file_log, sep="\n", append=TRUE)
+
+total_time = Sys.time() - start_time
+cat(glue::glue("finished run in {round(total_time, 0)} secs"), 
+    file=g_file_log, sep="\n", append=TRUE)
+
+cat(glue::glue("\n"), 
+    file=g_file_log, sep="\n", append=TRUE)
 
 # remove unnecessary variables from environment ----
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))

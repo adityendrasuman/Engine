@@ -2,6 +2,7 @@
 rm(list = ls())
 if (!is.null(dev.list())) dev.off()
 cat("\014")
+start_time <- Sys.time()
 
 # capture variable coming from vba ----
 args <- commandArgs(trailingOnly=T)
@@ -62,18 +63,22 @@ Sys.sleep(0)
 
 #====================================================
 
-# Acknowledgement of run ----
-log_file = "log - incomplete.txt"
-unlink(log_file)
-cat("... Run completed", file=log_file, sep="\n", append=TRUE)
-cat(glue::glue("environment contains: {sapply(ls(pattern = '^(d_|g_|f_)'), toString)}"), 
-    file=log_file, sep="\n", append=TRUE)
-cat(glue::glue("error: {error}"), file=log_file, sep="\n", append=TRUE)
-# shell.exec(log_file)
+# Log of run ----
+cat(glue::glue("===================== Running '11_numeric_id.R' ====================="), 
+    file=g_file_log, sep="\n", append=TRUE)
+
+cat(glue::glue("This code identifies columns in the data that have one or more full numeric response"), 
+    file=g_file_log, sep="\n", append=TRUE)
+
+total_time = Sys.time() - start_time
+cat(glue::glue("finished run in {round(total_time, 0)} secs"), 
+    file=g_file_log, sep="\n", append=TRUE)
+
+cat(glue::glue("\n"), 
+    file=g_file_log, sep="\n", append=TRUE)
 
 # remove unnecessary variables from environment ----
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 
 # save environment in a session temp variable ----
 save.image(file=file.path(g_wd, "env.RData"))
-

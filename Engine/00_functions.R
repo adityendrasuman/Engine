@@ -459,13 +459,13 @@ f_log_table <- function(df, title="", output=eval(outfile)){
     }
     d <- rbind(cnames, separator, d)
     
+    cat("", file = output, append = TRUE, sep = "\n")
     cat(paste0("   ", paste(replicate(ceiling(tot) - 3, "#"), collapse = "")), file = output, append = TRUE, sep = "\n")
     cat(paste0("   | ", trimws(gsub("_", " ", paste0("TITLE: ", title)))), file = output, append = TRUE, sep = "\n")
     cat(paste0("   ", paste(replicate(ceiling(tot) - 3, "="), collapse = "")), file = output, append = TRUE, sep = "\n")
     write.table(d, output, quote = F, append = T, row.names = F, col.names = F, na = "<NA>", sep = "|")
     cat(paste0("   ", paste(replicate(ceiling(tot) - 3, "="), collapse = "")), file = output, append = TRUE, sep = "\n")
     cat(paste0("   ", paste(replicate(ceiling(tot) - 3, "#"), collapse = "")), file = output, append = TRUE, sep = "\n")
-    cat("", file = output, append = TRUE, sep = "\n")
     cat("", file = output, append = TRUE, sep = "\n")
   }
 }
