@@ -86,10 +86,9 @@ summary2 <- matrix(ncol=2,nrow=0) %>%
   data.frame() %>% 
   select(column_category = 1, new_column = 2)
 
-pb <- txtProgressBar(min = 0, max = length(columns), style = 3, width = 50)
 print(glue::glue("creating one-hot encoding..."))
-
 counter <- 0
+pb <- txtProgressBar(min = 0, max = length(columns), style = 3, width = 50)
 
 for (q in questions) {
   
@@ -102,7 +101,7 @@ for (q in questions) {
     unlist()
   
   table_with_relevant_cols <- d_01_B %>%
-    select(temp_id, list_of_columns) %>%
+    select(temp_id, all_of(list_of_columns)) %>%
     mutate(temp_all_values = "")
     
   for (i in 1:(ncol(table_with_relevant_cols) - 2)){
@@ -122,7 +121,7 @@ for (q in questions) {
     left_join(table_with_relevant_cols, by = "temp_id")
 
   column_values <- d_01_B %>%
-    select(list_of_columns) %>%
+    select(all_of(list_of_columns)) %>%
     unlist() %>%
     table() %>%
     data.frame() %>%
@@ -160,15 +159,18 @@ for (q in questions) {
     counter = counter + 1
     setTxtProgressBar(pb, counter)
     
-    summary <- d_01_B %>%
-      select(all_of(column_new), list_of_columns) %>%
+    d_01_B %>%
+      select(all_of(column_new), all_of(list_of_columns)) %>%
       group_by_all() %>% 
       count() %>% 
       as.data.frame() %>% 
       f_log_table(paste0(as.character("OH encoding for: ", column_new)), g_file_log)
     
+    new_df <- data.frame(q, as.character(column_new))
+    names(new_df) <- names(summary2)
+    
     summary2 <- summary2 %>% 
-      rbind(q, column_new)
+      rbind(new_df)
   }
 
   d_01_B <- d_01_B %>%
