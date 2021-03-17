@@ -60,5 +60,6 @@ rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 save.image(file=file.path(g_wd, "env.RData"))
 
 # Log of time taken ----
-cat(glue::glue("finished run in {Sys.time() - start_time}"), 
+total_time = Sys.time() - start_time
+cat(glue::glue("finished run in {round(total_time, 0)} mins"), 
     file=g_file_log, sep="\n", append=TRUE)
