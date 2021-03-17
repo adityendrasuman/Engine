@@ -81,13 +81,18 @@ for (i in 1:nrow(col_list)){
   
 }
 
-pb <- txtProgressBar(min = 0, max = length(columns), style = 3, width = 40)
+# dataframe to hold new column names
+summary2 <- matrix(ncol=2,nrow=0) %>% 
+  data.frame() %>% 
+  select(column_category = 1, new_column = 2)
+
+pb <- txtProgressBar(min = 0, max = length(columns), style = 3, width = 50)
 print(glue::glue("creating one-hot encoding..."))
 
 counter <- 0
 
 for (q in questions) {
-
+  
   # create a variable temp_all_values in the main file that combines values from all relevant variables
 
   list_of_columns <- d_01_B %>%
@@ -98,8 +103,7 @@ for (q in questions) {
   
   table_with_relevant_cols <- d_01_B %>%
     select(temp_id, list_of_columns) %>%
-    mutate(temp_all_values = "") %>% 
-    colnames()
+    mutate(temp_all_values = "")
     
   for (i in 1:(ncol(table_with_relevant_cols) - 2)){
     table_with_relevant_cols <- table_with_relevant_cols %>%
@@ -118,7 +122,7 @@ for (q in questions) {
     left_join(table_with_relevant_cols, by = "temp_id")
 
   column_values <- d_01_B %>%
-    select(matches(paste0("^.*", q, ".*$"))) %>%
+    select(list_of_columns) %>%
     unlist() %>%
     table() %>%
     data.frame() %>%
@@ -139,31 +143,33 @@ for (q in questions) {
   
   for (j in 1:num_column_values){
     
-    column_new <- paste0("z_", q, start, i, "_", column_values[i, "value_colnames"]) %>%
+    column_new <- paste0("z_", q, start, j, "_", column_values[j, "value_colnames"]) %>%
       tolower() %>% 
       rlang::sym()
 
-    search_term = column_values[i, "value_colnames"]
+    search_term = column_values[j, "value_colnames"]
 
     d_01_B <- d_01_B %>%
       mutate(!!column_new := case_when(
         str_detect(temp_all_values, search_term) ~ "Yes",
         str_detect(temp_all_values, "^\\|*$") ~ NA_character_,
         TRUE ~ "No"
-        )
       )
+    )
 
     counter = counter + 1
     setTxtProgressBar(pb, counter)
     
+    summary <- d_01_B %>%
+      select(column_new, list_of_columns) %>%
+      group_by_all() %>% 
+      count() %>% 
+      as.data.frame() %>% 
+      f_log_table(paste0(as.character("OH encoding for: ", column_new)), g_file_log)
+    
+    summary2 <- summary2 %>% 
+      rbind(q, column_new)
   }
-
-  summary <- d_01_B %>%
-    select(list_of_columns, column_new) %>%
-    group_by_all() %>% 
-    count() %>% 
-    as.data.frame() %>%
-    logtable(paste0(as.character("OH encoding for: ", column)), g_file_log)
 
   d_01_B <- d_01_B %>%
     select(-temp_all_values)
@@ -173,6 +179,9 @@ d_01_B <- d_01_B %>%
   select(-temp_id)
 
 close(pb)
+
+summary2 %>% 
+  write.table(file = file.path("temp.csv"), sep=",", col.names = F, row.names = F)
 
 Sys.sleep(3)
 #====================================================
