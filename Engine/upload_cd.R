@@ -1,0 +1,45 @@
+# cleanup the environment ----
+rm(list = ls())
+if (!is.null(dev.list())) dev.off()
+cat("\014")
+
+# capture variable coming from vba ----
+args <- commandArgs(trailingOnly=T)
+
+# set working director ---- 
+setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
+
+# load environment ----
+load("env.RData")
+
+# load librarise ----
+error = f_libraries(
+  necessary.std = c("openxlsx", "glue"),
+  necessary.github = c()
+)
+print(error)
+#====================================================
+
+print("Importing clean data ...")
+d_02 <- openxlsx::read.xlsx(g_file_path, namedRegion = "all_cd", colNames = T)
+print(glue::glue("Imported data has {ncol(d_02)} columns and {nrow(d_02)} rows"))
+
+Sys.sleep(3)
+#====================================================
+
+# Acknowledgement of run ----
+log_file = "log - upload_cd.txt"
+unlink(log_file)
+cat("... Run completed", file=log_file, sep="\n", append=TRUE)
+cat(glue::glue("environment contains: {sapply(ls(pattern = '^(d_|g_|f_)'), toString)}"), 
+    file=log_file, sep="\n", append=TRUE)
+cat(glue::glue("error: {error}"), file=log_file, sep="\n", append=TRUE)
+# shell.exec(log_file)
+
+# remove unnecessary variables from environment ----
+rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
+rm("d_01")
+
+# save environment in a session temp variable ----
+save.image(file=file.path(g_wd, "env.RData"))
+
