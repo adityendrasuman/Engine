@@ -13,13 +13,9 @@ setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
 # load environment ----
 load("env.RData")
 
-# load custom functions ----
-source(do.call(file.path, as.list(strsplit(paste0(args[2], "00_functions.R"), "\\|")[[1]])), 
-       print.eval = TRUE, echo = F)
-
 # load libraries ----
 error = f_libraries(
-  necessary.std = c("glue"),
+  necessary.std = c("glue", "dplyr"),
   necessary.github = c()
 )
 print(glue::glue("RUNNING R SERVER ..."))
@@ -30,8 +26,9 @@ print(glue::glue("=============================================="))
 d_01_B <- d_01_A
 
 print(glue::glue("Importing 'Live Capture' column names from the excel interface..."))
-col_list <- openxlsx::read.xlsx(g_file_path, namedRegion = "R_oh_encoding", colNames = T)
+col_list <- openxlsx::read.xlsx(g_file_path, namedRegion = "body_OHE_input", colNames = F)
 
+col_list %>% nrow() %>% print()
 
 Sys.sleep(3)
 
