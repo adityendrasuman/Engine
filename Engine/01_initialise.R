@@ -1,8 +1,8 @@
 # cleanup the environment ----
-start_time <- Sys.time()
 rm(list = ls())
 if (!is.null(dev.list())) dev.off()
 cat("\014")
+start_time <- Sys.time()
 
 # capture variable coming from vba ----
 args <- commandArgs(trailingOnly=T)
@@ -10,16 +10,23 @@ args <- commandArgs(trailingOnly=T)
 # set working director ---- 
 setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
 
+# load environment ----
+if (args[6] == "refresh") {
+  load("env.RData")
+}
+
 # load custom functions ----
 source(do.call(file.path, as.list(strsplit(paste0(args[2], "00_functions.R"), "\\|")[[1]])), 
        print.eval = TRUE, echo = F)
 
-# load librarise ----
+# load libraries ----
 error = f_libraries(
   necessary.std = c("glue"),
   necessary.github = c()
 )
-print(error)
+print(glue::glue("RUNNING R SERVER ..."))
+print(glue::glue("Package status: {error}"))
+print(glue::glue("=============================================="))
 #====================================================
 
 # global variables ----

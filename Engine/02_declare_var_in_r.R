@@ -10,8 +10,10 @@ args <- commandArgs(trailingOnly=T)
 # set working director ---- 
 setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
 
-# load environment ----
-load("env.RData")
+if (args[6] == "refresh") {
+  # load environment ----
+  load("env.RData")
+}
 
 # load custom functions ----
 source(do.call(file.path, as.list(strsplit(paste0(args[2], "00_functions.R"), "\\|")[[1]])), 
