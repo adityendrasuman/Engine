@@ -34,17 +34,18 @@ g_wd                                <- g_excel_backend_temp_dir
 g_file_log                          <- file.path(g_excel_frontend_dir, "Latest logs.txt")
 g_file_plot                         <- file.path(g_excel_frontend_dir, "Latest plots.pdf")
 
+unlink(g_file_log)
+unlink(g_file_plot)
+
 Sys.sleep(0)
 #====================================================
 
-# Acknowledgement of run ----
-log_file = "log - initialise.txt"
-unlink(log_file)
-cat("... Run completed", file=log_file, sep="\n", append=TRUE)
-cat(glue::glue("environment contains: {sapply(ls(pattern = '^(d_|g_|f_)'), toString)}"), 
-    file=log_file, sep="\n", append=TRUE)
-cat(glue::glue("error: {error}"), file=log_file, sep="\n", append=TRUE)
-# shell.exec(log_file)
+# Log of run ----
+cat(glue::glue("===================== Running 'initialise.R' ====================="), 
+    file=g_file_log, sep="\n", append=TRUE)
+
+cat(glue::glue("This will initialise a blank environment with all the global variables"), 
+    file=g_file_log, sep="\n", append=TRUE)
 
 # remove unnecessary variables from environment ----
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
@@ -52,3 +53,6 @@ rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 # save environment in a session temp variable ----
 save.image(file=file.path(g_wd, "env.RData"))
 
+# Log of time taken ----
+cat(glue::glue("finished run in {}"), 
+    file=g_file_log, sep="\n", append=TRUE)

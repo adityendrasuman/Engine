@@ -36,10 +36,28 @@ g_file_name                         <- args[5]
 g_file_path                         <- file.path(g_excel_frontend_dir, g_file_name)
 g_wd                                <- g_excel_backend_temp_dir
 
+g_file_log                          <- file.path(g_excel_frontend_dir, "Latest logs.txt")
+g_file_plot                         <- file.path(g_excel_frontend_dir, "Latest plots.pdf")
+
+unlink(g_file_log)
+unlink(g_file_plot)
+
+Sys.sleep(0)
 #====================================================
+
+# Log of run ----
+cat(glue::glue("===================== Running 'declare_var_in_r.R' ====================="), 
+    file=g_file_log, sep="\n", append=TRUE)
+
+cat(glue::glue("This will load the last saved environment and refresh all the global variables using latest excel"), 
+    file=g_file_log, sep="\n", append=TRUE)
 
 # remove unnecessary variables from environment ----
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 
 # save environment in a session temp variable ----
 save.image(file=file.path(g_wd, "env.RData"))
+
+# Log of time taken ----
+cat(glue::glue("finished run in {}"), 
+    file=g_file_log, sep="\n", append=TRUE)
