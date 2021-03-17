@@ -1,4 +1,5 @@
 # cleanup the environment ----
+start_time <- Sys.time()
 rm(list = ls())
 if (!is.null(dev.list())) dev.off()
 cat("\014")
@@ -41,7 +42,7 @@ Sys.sleep(0)
 #====================================================
 
 # Log of run ----
-cat(glue::glue("===================== Running 'initialise.R' ====================="), 
+cat(glue::glue("===================== Running '01_initialise.R' ====================="), 
     file=g_file_log, sep="\n", append=TRUE)
 
 cat(glue::glue("This will initialise a blank environment with all the global variables"), 
@@ -54,5 +55,5 @@ rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 save.image(file=file.path(g_wd, "env.RData"))
 
 # Log of time taken ----
-cat(glue::glue("finished run in {}"), 
+cat(glue::glue("finished run in {Sys.time() - start_time}"), 
     file=g_file_log, sep="\n", append=TRUE)
