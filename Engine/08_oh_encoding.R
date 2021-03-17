@@ -161,7 +161,7 @@ for (q in questions) {
     setTxtProgressBar(pb, counter)
     
     summary <- d_01_B %>%
-      select(column_new, list_of_columns) %>%
+      select(all_of(column_new), list_of_columns) %>%
       group_by_all() %>% 
       count() %>% 
       as.data.frame() %>% 
