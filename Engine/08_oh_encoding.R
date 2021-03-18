@@ -57,133 +57,179 @@ d_01_B <- d_01_A %>%
 
 print(glue::glue("Importing 'Live Capture' column names from the excel interface..."))
 
-col_list <- openxlsx::read.xlsx(g_file_path, namedRegion = "body_OHE_input", colNames = F) %>% 
-  filter_all(any_vars(!is.na(.)))
+col_list <- openxlsx::read.xlsx(g_file_path, namedRegion = "body_OHE_input", colNames = F) 
 
-# Get column names and questions for OHE
-columns <- list()
-questions <- list()
-
-for (i in 1:nrow(col_list)){
+if (is.null(nrow(col_list))) {
   
-  columns <- d_01_B %>% 
-    select(matches(col_list[i, 1])) %>% 
-    colnames() %>% 
-    c(columns) %>% 
-    unique()
-  
-  questions <- d_01_B %>% 
-    select(matches(col_list[i, 1])) %>% 
-    colnames() %>% 
-    stringr::str_extract(col_list[i, 2]) %>% 
-    c(questions) %>% 
-    unique()
-  
-}
+  print(glue::glue("No user input found for the 'Live Capture' columns. Please provide reg-ex inputs..."))
 
-# dataframe to hold new column names
-summary2 <- matrix(ncol=2,nrow=0) %>% 
-  data.frame() %>% 
-  select(column_category = 1, new_column = 2)
-
-print(glue::glue("creating one-hot encoding..."))
-counter <- 0
-pb <- txtProgressBar(min = 0, max = length(columns), style = 3, width = 50)
-
-for (q in questions) {
+} else {
   
-  # create a variable temp_all_values in the main file that combines values from all relevant variables
+  col_list <- col_list %>% 
+    filter_all(any_vars(!is.na(.)))
 
-  list_of_columns <- d_01_B %>%
-    select(matches(paste0("^.*", q, ".*$"))) %>%
-    colnames() %>% 
-    intersect(columns) %>% 
-    unlist()
+  # Get column names and questions for OHE
+  columns <- list()
+  questions <- list()
   
-  table_with_relevant_cols <- d_01_B %>%
-    select(temp_id, all_of(list_of_columns)) %>%
-    mutate(temp_all_values = "")
+  for (i in 1:nrow(col_list)){
     
-  for (i in 1:(ncol(table_with_relevant_cols) - 2)){
-    table_with_relevant_cols <- table_with_relevant_cols %>%
-      mutate(temp_all_values = paste0(temp_all_values,
-                                      ifelse(is.na(.[, i+1]) | .[, i+1] == "",
-                                             "", paste0("|", make_col_names(.[, i+1]))
-                                      )
-      )
-      )
+    columns <- d_01_B %>% 
+      select(matches(col_list[i, 1])) %>% 
+      colnames() %>% 
+      c(columns) %>% 
+      unique()
+    
+    questions <- d_01_B %>% 
+      select(matches(col_list[i, 1])) %>% 
+      colnames() %>% 
+      stringr::str_extract(col_list[i, 2]) %>% 
+      c(questions) %>% 
+      unique()
+    
   }
-
-  table_with_relevant_cols <- table_with_relevant_cols %>%
-    select(temp_id, temp_all_values)
-
-  d_01_B <- d_01_B %>%
-    left_join(table_with_relevant_cols, by = "temp_id")
-
-  column_values <- d_01_B %>%
-    select(all_of(list_of_columns)) %>%
-    unlist() %>%
-    table() %>%
-    data.frame() %>%
-    select("value" = 1, "freq" = 2) %>%
-    filter(!is.na(value)) %>%
-    filter(value != "") %>%
-    filter(value != "{0}") %>%
-    mutate(value_colnames = make_col_names(value)) %>%
-    mutate(value = as.character(value))
-
-  num_column_values <- column_values %>%
-    nrow()
   
-  len <- nchar(q)
-  last <- substr(q, len, len)
-  last2 <- substr(q, len - 1, len)
-  start <- ifelse(last == "_", "o", ifelse(last2 == "_o" | last == "_O", "", "_o"))
+  # dataframe to hold new column names
+  summary2 <- matrix(ncol=2,nrow=0) %>% 
+    data.frame() %>% 
+    select(column_category = 1, new_column = 2)
   
-  for (j in 1:num_column_values){
+  summary3 <- matrix(ncol=2,nrow=0) %>% 
+    data.frame() %>% 
+    select(column_category = 1, column = 2)
+  
+  # Check if regex is identifying one column under one question uniquely 
+  for (q in questions) {
     
-    column_new <- paste0("z_", q, start, j, "_", column_values[j, "value_colnames"]) %>%
-      tolower() %>% 
-      rlang::sym()
+    summary3 <- summary3 %>% 
+      rbind(d_01_B %>%
+              select(matches(paste0("^.*", q, ".*$"))) %>%
+              colnames() %>% 
+              intersect(columns) %>% 
+              unlist() %>% 
+              as.data.frame() %>% 
+              rename(column = 1) %>% 
+              mutate(column_category = q) %>% 
+              select(2, 1))
+  }
+  
+  summary3_temp <- summary3 %>% 
+    select(2) %>% 
+    group_by_all() %>% 
+    count() %>% 
+    as.data.frame() %>% 
+    filter(n > 1)
+  
+  if (nrow(summary3_temp) > 0){
+    
+    summary3 %>% 
+      right_join(summary3_temp, by = "column") %>% 
+      f_log_table("Live capture columns captured under multiple groups", g_file_log)
+    
+    print(glue::glue("CRITICAL ERROR: Regex needs to be refined. It currently identifies same column under various grouping"))
+    print(glue::glue("Please see log file for more information"))
 
-    search_term = column_values[j, "value_colnames"]
-
+  } else {
+    
+    print(glue::glue("creating one-hot encoding..."))
+    counter <- 0
+    pb <- txtProgressBar(min = 0, max = length(columns), style = 3, width = 50)
+    
+    for (q in questions) {
+      
+      # create a variable temp_all_values in the main file that combines values from all relevant variables
+    
+      list_of_columns <- d_01_B %>%
+        select(matches(paste0("^.*", q, ".*$"))) %>%
+        colnames() %>% 
+        intersect(columns) %>% 
+        unlist()
+      
+      table_with_relevant_cols <- d_01_B %>%
+        select(temp_id, all_of(list_of_columns)) %>%
+        mutate(temp_all_values = "")
+        
+      for (i in 1:length(list_of_columns)){
+        table_with_relevant_cols <- table_with_relevant_cols %>%
+          mutate(temp_all_values = paste0(temp_all_values, 
+                                          ifelse(is.na(.[, i+1]) | .[, i+1] == "", "", paste0("|", make_col_names(.[, i+1])))))
+      }
+    
+      table_with_relevant_cols <- table_with_relevant_cols %>%
+        select(temp_id, temp_all_values)
+    
+      d_01_B <- d_01_B %>%
+        left_join(table_with_relevant_cols, by = "temp_id")
+    
+      column_values <- d_01_B %>%
+        select(all_of(list_of_columns)) %>%
+        unlist() %>%
+        table() %>%
+        data.frame() %>%
+        select("value" = 1, "freq" = 2) %>%
+        filter(!is.na(value)) %>%
+        filter(value != "") %>%
+        filter(value != "{0}") %>%
+        mutate(value_colnames = make_col_names(value)) %>%
+        mutate(value = as.character(value))
+    
+      num_column_values <- column_values %>%
+        nrow()
+      
+      len <- nchar(q)
+      last <- substr(q, len, len)
+      last2 <- substr(q, len - 1, len)
+      start <- ifelse(last == "_", "o", ifelse(last2 == "_o" | last2 == "_O", "", "_o"))
+      
+      for (j in 1:num_column_values){
+        
+        column_new <- paste0("z_", q, start, j, "_", column_values[j, "value_colnames"]) %>%
+          tolower() %>% 
+          rlang::sym()
+    
+        search_term = column_values[j, "value_colnames"]
+    
+        d_01_B <- d_01_B %>%
+          mutate(!!column_new := case_when(
+            stringr::str_detect(temp_all_values, search_term) ~ "Yes",
+            stringr::str_detect(temp_all_values, search_term, negate = T) ~ "No",
+            stringr::str_detect(temp_all_values, "^\\|*$") ~ NA_character_,
+            TRUE ~ "Check OHE!"
+          )
+        )
+    
+        d_01_B %>%
+          select(all_of(column_new), all_of(list_of_columns)) %>%
+          group_by_all() %>% 
+          count() %>% 
+          as.data.frame() %>% 
+          f_log_table(paste0("OH encoding for: ", as.character(column_new)), g_file_log)
+        
+        new_df <- data.frame(q, as.character(column_new))
+        names(new_df) <- names(summary2)
+        
+        summary2 <- summary2 %>% 
+          rbind(new_df)
+        
+        counter = counter + 1
+        setTxtProgressBar(pb, counter)
+        
+      }
+      
+      d_01_B <- d_01_B %>%
+        select(-temp_all_values)
+    }
+    
     d_01_B <- d_01_B %>%
-      mutate(!!column_new := case_when(
-        str_detect(temp_all_values, search_term) ~ "Yes",
-        str_detect(temp_all_values, "^\\|*$") ~ NA_character_,
-        TRUE ~ "No"
-      )
-    )
-
-    counter = counter + 1
-    setTxtProgressBar(pb, counter)
+      select(-temp_id)
     
-    d_01_B %>%
-      select(all_of(column_new), all_of(list_of_columns)) %>%
-      group_by_all() %>% 
-      count() %>% 
-      as.data.frame() %>% 
-      f_log_table(paste0(as.character("OH encoding for: ", column_new)), g_file_log)
+    summary2 %>% 
+      write.table(file = file.path("temp.csv"), sep=",", col.names = F, row.names = F)
     
-    new_df <- data.frame(q, as.character(column_new))
-    names(new_df) <- names(summary2)
-    
-    summary2 <- summary2 %>% 
-      rbind(new_df)
+    close(pb)
   }
-
-  d_01_B <- d_01_B %>%
-    select(-temp_all_values)
 }
 
-d_01_B <- d_01_B %>%
-  select(-temp_id)
-
-close(pb)
-
-summary2 %>% 
-  write.table(file = file.path("temp.csv"), sep=",", col.names = F, row.names = F)
 
 Sys.sleep(3)
 #====================================================
