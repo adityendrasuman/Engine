@@ -429,7 +429,7 @@ f_plotter <- function(graph, location){
 
 f_log_table <- function(df, title="", output=eval(outfile)){
   
-  if (nrow(df) == 0) {
+  if (is.null(nrow(df))) {
     cat(paste0("   | ", trimws(paste0("TITLE: ", title))), file = output, 
         append = TRUE, sep = "\n")
     cat(paste0("   ", "Table has zero rows. Can not be written"), file = output, 

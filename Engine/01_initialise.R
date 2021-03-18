@@ -52,7 +52,12 @@ Sys.sleep(0)
 cat(glue::glue("===================== Running '01_initialise.R' ====================="), 
     file=g_file_log, sep="\n", append=TRUE)
 
-cat(glue::glue("This will initialise a blank environment with all the global variables"), 
+if (args[6] == "refresh"){
+  str = "This will load the last saved environment and refresh all the global variables using latest excel"
+} else {
+  str = "This will initialise a blank environment with all the global variables"
+}
+cat(glue::glue("{str}"), 
     file=g_file_log, sep="\n", append=TRUE)
 
 total_time = Sys.time() - start_time
