@@ -21,7 +21,7 @@ source(do.call(file.path, as.list(strsplit(paste0(args[2], "00_functions.R"), "\
 
 # load libraries ----
 error = f_libraries(
-  necessary.std = c("glue"),
+  necessary.std = c("glue", "dplyr"),
   necessary.github = c()
 )
 
