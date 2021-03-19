@@ -12,7 +12,7 @@ setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
 
 # load environment ----
 if (args[6] == "refresh") {
-  load("env.RData")
+  if (file.exists("env.RData")) {load("env.RData")}
 }
 
 # load custom functions ----
@@ -45,8 +45,6 @@ g_file_plot                         <- file.path(g_excel_frontend_dir, "Latest p
 
 unlink(g_file_log)
 unlink(g_file_plot)
-
-Sys.sleep(0)
 #====================================================
 
 # Log of run ----
@@ -66,3 +64,5 @@ rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 
 # save environment in a session temp variable ----
 save.image(file=file.path(g_wd, "env.RData"))
+
+Sys.sleep(3)
