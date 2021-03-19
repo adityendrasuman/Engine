@@ -24,8 +24,9 @@ error = f_libraries(
   necessary.std = c("glue"),
   necessary.github = c()
 )
+
 print(glue::glue("RUNNING R SERVER ..."))
-print(glue::glue("Package status: {error}"))
+print(glue::glue("Library status: {error}"))
 print(glue::glue("=============================================="))
 #====================================================
 
@@ -49,23 +50,16 @@ Sys.sleep(0)
 #====================================================
 
 # Log of run ----
-cat(glue::glue("===================== Running '01_initialise.R' ====================="), 
-    file=g_file_log, sep="\n", append=TRUE)
+if (args[6] == "refresh") {str = "Loads the last saved environment and refreshes all the global variables using the latest interface"} 
+if (args[6] == "reset") {str = "Initialises a blank environment with all the global variables using the latest interface"}
 
-if (args[6] == "refresh"){
-  str = "This will load the last saved environment and refresh all the global variables using latest excel"
-} else {
-  str = "This will initialise a blank environment with all the global variables"
-}
-cat(glue::glue("{str}"), 
-    file=g_file_log, sep="\n", append=TRUE)
+glue::glue("===================== Running '01_initialise.R' =====================") %>% f_log_string(g_file_log) 
 
-total_time = Sys.time() - start_time
-cat(glue::glue("finished run in {round(total_time, 0)} secs"), 
-    file=g_file_log, sep="\n", append=TRUE)
+glue::glue("{str}")%>% f_log_string(g_file_log)
 
-cat(glue::glue("\n"), 
-    file=g_file_log, sep="\n", append=TRUE)
+glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
+
+glue::glue("\n") %>% f_log_string(g_file_log)
 
 # remove unnecessary variables from environment ----
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))

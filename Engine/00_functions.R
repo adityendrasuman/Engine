@@ -31,8 +31,8 @@ f_libraries <- function(necessary.std, necessary.github){
   }
   
   # throw error if unloaded
-  if (!all(loaded)) return(paste0("Following packages could not be loaded: ", missing))
-  if (all(loaded)) return("All packages loaded successfully")
+  if (!all(loaded)) return(paste0("Following libraries could not be loaded: ", missing))
+  if (all(loaded)) return("All libraries loaded successfully")
 }
 
 # ID ANY GIVEN REGEX CHARECTER IN ALL THE COLUMNS OF THE DATA
@@ -427,7 +427,15 @@ f_plotter <- function(graph, location){
 }
 
 
-f_log_table <- function(df, title="", output=eval(outfile)){
+f_log_string <- function(str, output){
+  
+  str = glue::glue(str)
+  print(str)
+  cat(str, file=output, sep="\n", append=TRUE)
+
+}
+
+f_log_table <- function(df, title="", output){
   
   if (is.null(nrow(df))) {
     cat(paste0("   | ", trimws(paste0("TITLE: ", title))), file = output, 
