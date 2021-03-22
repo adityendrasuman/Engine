@@ -13,7 +13,7 @@ setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
 # load environment ----
 load("env.RData")
 
-# load librarise ----
+# load libraries ----
 error = f_libraries(
   necessary.std = c("dplyr", "stringr", "profvis"),
   necessary.github = c()
@@ -21,6 +21,7 @@ error = f_libraries(
 print(glue::glue("RUNNING R SERVER ..."))
 print(glue::glue("Package status: {error}"))
 print(glue::glue("=============================================="))
+
 #====================================================
 
 print(glue::glue("Trimming whitespaces..."))
@@ -37,8 +38,6 @@ if(is.null(nrow(summary))) {
   print(glue::glue("All white spaces could not be removed"))
   print(glue::glue("Please remove manually in the raw data and upload it again"))
 }
-
-Sys.sleep(3)
 
 #====================================================
 
@@ -61,3 +60,9 @@ rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 
 # save environment in a session temp variable ----
 save.image(file=file.path(g_wd, "env.RData"))
+
+print(glue::glue("\n\nAll done!"))
+for(i in 1:3){
+  print(glue::glue("Finishing in: {4 - i} sec"))
+  Sys.sleep(1)
+}
