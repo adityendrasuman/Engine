@@ -1,0 +1,222 @@
+# cleanup the environment ----
+rm(list = ls())
+if (!is.null(dev.list())) dev.off()
+cat("\014")
+start_time <- Sys.time()
+
+# capture variable coming from vba ----
+args <- commandArgs(trailingOnly=T)
+
+# set working director ---- 
+setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
+
+# load environment ----
+load("env.RData")
+
+# load libraries ----
+error = f_libraries(
+  necessary.std = c("glue", "dplyr", "stringr", "purrr"),
+  necessary.github = c()
+)
+print(glue::glue("RUNNING R SERVER ..."))
+print(glue::glue("Package status: {error}"))
+print(glue::glue("=============================================="))
+
+# Log of run ----
+cat(glue::glue("===================== Running '07_regex_col_match.R' ====================="), 
+    file=g_file_log, sep="\n", append=TRUE)
+
+cat(glue::glue("This code identifies list of columns corresponding to a regex input"), 
+    file=g_file_log, sep="\n", append=TRUE)
+
+#====================================================
+
+if (args[3] == ""){args[3] = ".+"}
+
+if (args[2] == "" | args[3] == "") {
+  
+  print(glue::glue("Incomplete user input found for the 'Live Capture' columns. Please provide reg-ex inputs and retry."))
+  print(glue::glue("If no 'Live Capture' columns need conversion, then move to the next step"))
+  
+} else {
+  
+  col_list <- col_list %>% 
+    filter_all(any_vars(!is.na(.)))
+
+  # Get column names and questions for OHE
+  columns <- list()
+  questions <- list()
+  
+  for (i in 1:nrow(col_list)){
+    
+    columns <- d_01_B %>% 
+      select(matches(args[3])) %>% 
+      colnames() %>% 
+      c(columns) %>% 
+      unique()
+    
+    questions <- d_01_B %>% 
+      select(matches(args[3])) %>% 
+      colnames() %>% 
+      stringr::str_extract(args[2]) %>% 
+      c(questions) %>% 
+      unique()
+  }
+  
+  # dataframe to hold new column names
+  summary2 <- matrix(ncol=2,nrow=0) %>% 
+    data.frame() %>% 
+    select(column_category = 1, new_column = 2)
+  
+  summary3 <- matrix(ncol=2,nrow=0) %>% 
+    data.frame() %>% 
+    select(column_category = 1, column = 2)
+  
+  # Check if regex is identifying one column under one question uniquely 
+  for (q in questions) {
+    
+    summary3 <- summary3 %>% 
+      rbind(d_01_B %>%
+              select(matches(paste0("^.*", q, ".*$"))) %>%
+              colnames() %>% 
+              intersect(columns) %>% 
+              unlist() %>% 
+              as.data.frame() %>% 
+              rename(column = 1) %>% 
+              mutate(column_category = q) %>% 
+              select(2, 1))
+  }
+  
+  summary3_temp <- summary3 %>% 
+    select(2) %>% 
+    group_by_all() %>% 
+    count() %>% 
+    as.data.frame() %>% 
+    filter(n > 1)
+  
+  if (nrow(summary3_temp) > 0){
+    
+    summary3 %>% 
+      right_join(summary3_temp, by = "column") %>% 
+      f_log_table("Live capture columns captured under multiple groups", g_file_log)
+    
+    print(glue::glue("CRITICAL ERROR: Regex needs to be refined. It currently identifies same column under various grouping"))
+    print(glue::glue("Please see log file for more information"))
+
+  } else {
+    
+    print(glue::glue("creating one-hot encoding..."))
+    counter <- 0
+    pb <- txtProgressBar(min = 0, max = length(columns), style = 3, width = 50)
+    
+    for (q in questions) {
+      
+      # create a variable temp_all_values in the main file that combines values from all relevant variables
+    
+      list_of_columns <- d_01_B %>%
+        select(matches(paste0("^.*", q, ".*$"))) %>%
+        colnames() %>% 
+        intersect(columns) %>% 
+        unlist()
+      
+      table_with_relevant_cols <- d_01_B %>%
+        select(temp_id, all_of(list_of_columns)) %>%
+        mutate(temp_all_values = "")
+        
+      for (i in 1:length(list_of_columns)){
+        table_with_relevant_cols <- table_with_relevant_cols %>%
+          mutate(temp_all_values = paste0(temp_all_values, 
+                                          ifelse(is.na(.[, i+1]) | .[, i+1] == "", "", paste0("|", make_col_names(.[, i+1])))))
+      }
+    
+      table_with_relevant_cols <- table_with_relevant_cols %>%
+        select(temp_id, temp_all_values)
+    
+      d_01_B <- d_01_B %>%
+        left_join(table_with_relevant_cols, by = "temp_id")
+    
+      column_values <- d_01_B %>%
+        select(all_of(list_of_columns)) %>%
+        unlist() %>%
+        table() %>%
+        data.frame() %>%
+        select("value" = 1, "freq" = 2) %>%
+        filter(!is.na(value)) %>%
+        filter(value != "") %>%
+        filter(value != "{0}") %>%
+        mutate(value_colnames = make_col_names(value)) %>%
+        mutate(value = as.character(value))
+    
+      num_column_values <- column_values %>%
+        nrow()
+      
+      len <- nchar(q)
+      last <- substr(q, len, len)
+      last2 <- substr(q, len - 1, len)
+      start <- ifelse(last == "_", "o", ifelse(last2 == "_o" | last2 == "_O", "", "_o"))
+      
+      for (j in 1:num_column_values){
+        
+        column_new <- paste0("z_", q, start, j, "_", column_values[j, "value_colnames"]) %>%
+          tolower() %>% 
+          rlang::sym()
+    
+        search_term = column_values[j, "value_colnames"]
+    
+        d_01_B <- d_01_B %>%
+          mutate(!!column_new := case_when(
+            stringr::str_detect(temp_all_values, search_term) ~ "Yes",
+            stringr::str_detect(temp_all_values, search_term, negate = T) ~ "No",
+            stringr::str_detect(temp_all_values, "^\\|*$") ~ NA_character_,
+            TRUE ~ "Check OHE!"
+          )
+        )
+    
+        d_01_B %>%
+          select(all_of(column_new), all_of(list_of_columns)) %>%
+          group_by_all() %>% 
+          count() %>% 
+          as.data.frame() %>% 
+          f_log_table(paste0("OH encoding for: ", as.character(column_new)), g_file_log)
+        
+        new_df <- data.frame(q, as.character(column_new))
+        names(new_df) <- names(summary2)
+        
+        summary2 <- summary2 %>% 
+          rbind(new_df)
+        
+        counter = counter + 1
+        setTxtProgressBar(pb, counter)
+        
+      }
+      
+      d_01_B <- d_01_B %>%
+        select(-temp_all_values)
+    }
+    
+    d_01_B <- d_01_B %>%
+      select(-temp_id)
+    
+    summary2 %>% 
+      write.table(file = file.path("temp.csv"), sep=",", col.names = F, row.names = F)
+    
+    close(pb)
+  }
+}
+
+
+Sys.sleep(3)
+#====================================================
+
+total_time = Sys.time() - start_time
+cat(glue::glue("finished run in {round(total_time, 0)} secs"), 
+    file=g_file_log, sep="\n", append=TRUE)
+
+cat(glue::glue("\n"), 
+    file=g_file_log, sep="\n", append=TRUE)
+
+# remove unnecessary variables from environment ----
+rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
+
+# save environment in a session temp variable ----
+save.image(file=file.path(g_wd, "env.RData"))
