@@ -61,7 +61,7 @@ col_list <- openxlsx::read.xlsx(g_file_path, namedRegion = "body_OHE_columns", c
 
 if (is.null(nrow(col_list))) {
   
-  print(glue::glue("Incomplete user input found for the 'Live Capture' columns. Please provide reg-ex inputs and retry."))
+  print(glue::glue("No column names found for OH Encoding. Either use a Regex pattern to create them or enter them manually in the excel interface"))
   print(glue::glue("If no 'Live Capture' columns need conversion, then move to the next step"))
   
 } else {
@@ -76,15 +76,15 @@ if (is.null(nrow(col_list))) {
   for (i in 1:nrow(col_list)){
     
     columns <- d_01_B %>% 
-      select(matches(col_list[i, 1])) %>% 
+      select(matches(col_list[i, 2])) %>% 
       colnames() %>% 
       c(columns) %>% 
       unique()
     
     questions <- d_01_B %>% 
-      select(matches(col_list[i, 1])) %>% 
+      select(matches(col_list[i, 2])) %>% 
       colnames() %>% 
-      stringr::str_extract(col_list[i, 2]) %>% 
+      stringr::str_extract(col_list[i, 1]) %>% 
       c(questions) %>% 
       unique()
     
@@ -231,8 +231,6 @@ if (is.null(nrow(col_list))) {
   }
 }
 
-
-Sys.sleep(3)
 #====================================================
 
 total_time = Sys.time() - start_time
@@ -247,3 +245,10 @@ rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 
 # save environment in a session temp variable ----
 save.image(file=file.path(g_wd, "env.RData"))
+
+# Close the R code
+print(glue::glue("\n\nAll done!"))
+for(i in 1:3){
+  print(glue::glue("Finishing in: {4 - i} sec"))
+  Sys.sleep(1)
+}
