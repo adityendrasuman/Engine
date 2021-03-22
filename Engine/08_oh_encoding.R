@@ -55,31 +55,39 @@ make_col_names <- function(vector) {
 d_01_B <- d_01_A %>% 
   mutate(temp_id = row_number())
 
-if (args[3] == ""){args[3] = ".+"}
+print(glue::glue("Importing 'Live Capture' column names from the excel interface..."))
 
-if (args[2] == "") {
+col_list <- openxlsx::read.xlsx(g_file_path, namedRegion = "body_OHE_columns", colNames = F) 
+
+if (is.null(nrow(col_list))) {
   
   print(glue::glue("Incomplete user input found for the 'Live Capture' columns. Please provide reg-ex inputs and retry."))
   print(glue::glue("If no 'Live Capture' columns need conversion, then move to the next step"))
   
 } else {
   
+  col_list <- col_list %>% 
+    filter_all(any_vars(!is.na(.)))
+
   # Get column names and questions for OHE
   columns <- list()
   questions <- list()
   
-  columns <- d_01_B %>% 
-    select(matches(args[3])) %>% 
-    colnames() %>% 
-    c(columns) %>% 
-    unique()
+  for (i in 1:nrow(col_list)){
     
-  questions <- d_01_B %>% 
-    select(matches(args[3])) %>% 
-    colnames() %>% 
-    stringr::str_extract(args[2]) %>% 
-    c(questions) %>% 
-    unique()
+    columns <- d_01_B %>% 
+      select(matches(col_list[i, 1])) %>% 
+      colnames() %>% 
+      c(columns) %>% 
+      unique()
+    
+    questions <- d_01_B %>% 
+      select(matches(col_list[i, 1])) %>% 
+      colnames() %>% 
+      stringr::str_extract(col_list[i, 2]) %>% 
+      c(questions) %>% 
+      unique()
+    
   }
   
   # dataframe to hold new column names

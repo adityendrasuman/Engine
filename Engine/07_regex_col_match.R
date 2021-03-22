@@ -26,7 +26,7 @@ print(glue::glue("=============================================="))
 cat(glue::glue("===================== Running '07_regex_col_match.R' ====================="), 
     file=g_file_log, sep="\n", append=TRUE)
 
-cat(glue::glue("This code identifies list of columns corresponding to a regex input"), 
+cat(glue::glue("This code identifies list of columns corresponding to the regex input for 'Live Capture'"), 
     file=g_file_log, sep="\n", append=TRUE)
 
 #====================================================
@@ -36,8 +36,7 @@ if (args[3] == ""){args[3] = ".+"}
 if (args[2] == "" | args[3] == "") {
   
   print(glue::glue("Incomplete user input found for the 'Live Capture' columns. Please provide reg-ex inputs and retry."))
-  print(glue::glue("If no 'Live Capture' columns need conversion, then move to the next step"))
-  
+
 } else {
   
   col_list <- col_list %>% 
