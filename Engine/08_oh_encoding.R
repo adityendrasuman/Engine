@@ -156,6 +156,7 @@ if (is.null(nrow(col_list))) {
                                           ifelse(is.na(.[, i+1]) | .[, i+1] == "", 
                                                  "", 
                                                  paste0("|", make_col_names(.[, i+1])))))
+        # f_progress(i/length(list_of_columns), counter/length(questions))
       }
     
       table_with_relevant_cols <- table_with_relevant_cols %>%
@@ -213,8 +214,9 @@ if (is.null(nrow(col_list))) {
         
         summary2 <- summary2 %>% 
           rbind(new_df)
-        
       }
+      
+      rm(pb2)
       
       counter = counter + 1
       utils::setTxtProgressBar(pb, counter)

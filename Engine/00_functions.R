@@ -35,6 +35,25 @@ f_libraries <- function(necessary.std, necessary.github){
   if (all(loaded)) return("All libraries loaded successfully")
 }
 
+# Nested progress bars
+f_progress <- function(...)    {
+  graphics.off()
+  vectOfBar <- c(...)*100
+  numOfBar <- length(vectOfBar)
+  if(.Platform$OS.type == "windows"){windows(width=8, height=numOfBar)}
+  par(mar = c(1, 1, 1, 1))
+  plot(c(0,100), c(0,numOfBar), type='n', 
+       xlab='', ylab='', yaxt='n', xaxt='n', xlim=c(0, 1.05))
+  for(i in 1:numOfBar) {
+    plotrix::gradient.rect(0, 0.1+i-1, vectOfBar[i], 0.9+i-1, 
+                           greens=c(seq(0.2,0.9,length=35),seq(0.9,0.6,length=15)),
+                           reds = c(rep(0,25), seq(0,0.9,length=10),seq(0.9,0,length=10), rep(0,5)),
+                           blues = c(rep(0,25), seq(0,0.9,length=10),seq(0.9,0,length=10), rep(0,5)),
+                           border = NA, gradient="y")
+    text(vectOfBar[i]+0.5, 0.5+i-1, paste(round(vectOfBar[i],0), '%', sep=''), adj=0)
+  }
+}
+
 # ID ANY GIVEN REGEX CHARECTER IN ALL THE COLUMNS OF THE DATA
 f_id_char <- function(data, search_chr){
   
