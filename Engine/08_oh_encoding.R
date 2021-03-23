@@ -62,7 +62,7 @@ col_list <- openxlsx::read.xlsx(g_file_path, namedRegion = "body_OHE_columns", c
 if (is.null(nrow(col_list))) {
   
   print(glue::glue("No column names found for OH Encoding. Either use a Regex pattern to create them or enter them manually in the excel interface"))
-  print(glue::glue("If no 'Live Capture' columns need conversion, then move to the next step"))
+  print(glue::glue("If no 'Live Capture' columns need conversion, then click 'skip' and move to the next step"))
   
 } else {
   
@@ -134,7 +134,7 @@ if (is.null(nrow(col_list))) {
     
     print(glue::glue("creating one-hot encoding..."))
     counter <- 0
-    pb <- txtProgressBar(min = 0, max = length(columns), style = 3, width = 50)
+    pb <- utils::txtProgressBar(min = 0, max = length(questions), style = 3, width = 50)
     
     for (q in questions) {
       
@@ -153,7 +153,9 @@ if (is.null(nrow(col_list))) {
       for (i in 1:length(list_of_columns)){
         table_with_relevant_cols <- table_with_relevant_cols %>%
           mutate(temp_all_values = paste0(temp_all_values, 
-                                          ifelse(is.na(.[, i+1]) | .[, i+1] == "", "", paste0("|", make_col_names(.[, i+1])))))
+                                          ifelse(is.na(.[, i+1]) | .[, i+1] == "", 
+                                                 "", 
+                                                 paste0("|", make_col_names(.[, i+1])))))
       }
     
       table_with_relevant_cols <- table_with_relevant_cols %>%
@@ -212,10 +214,10 @@ if (is.null(nrow(col_list))) {
         summary2 <- summary2 %>% 
           rbind(new_df)
         
-        counter = counter + 1
-        setTxtProgressBar(pb, counter)
-        
       }
+      
+      counter = counter + 1
+      utils::setTxtProgressBar(pb, counter)
       
       d_01_B <- d_01_B %>%
         select(-temp_all_values)

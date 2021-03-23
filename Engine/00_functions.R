@@ -63,7 +63,7 @@ f_id_char <- function(data, search_chr){
       }
     }
     
-    setTxtProgressBar(pb, i)
+    utils::setTxtProgressBar(pb, i)
   }
   close(pb)
   
