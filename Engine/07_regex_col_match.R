@@ -42,21 +42,20 @@ if (args[2] == "") {
 } else {
   
   # Get column names and questions for OHE
-  columns <- list()
-  questions <- list()
-  
   columns <- d_01_A %>% 
     select(matches(args[3])) %>% 
     colnames() %>% 
-    c(columns) %>% 
-    unique()
+    unique() %>% 
+    na.omit() %>% 
+    as.list()
     
   questions <- d_01_A %>% 
     select(matches(args[3])) %>% 
     colnames() %>% 
     stringr::str_extract(args[2]) %>% 
-    c(questions) %>% 
-    unique()
+    unique() %>% 
+    na.omit() %>% 
+    as.list()
   
   summary <- matrix(ncol=2,nrow=0) %>% 
     data.frame() %>% 
