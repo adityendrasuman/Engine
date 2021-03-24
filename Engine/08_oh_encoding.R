@@ -15,7 +15,7 @@ load("env.RData")
 
 # load libraries ----
 error = f_libraries(
-  necessary.std = c("glue", "dplyr", "stringr", "purrr"),
+  necessary.std = c("glue", "dplyr", "stringr", "purrr", "utils"),
   necessary.github = c()
 )
 print(glue::glue("RUNNING R SERVER ..."))
@@ -127,7 +127,7 @@ if (is.null(nrow(col_list))) {
       right_join(summary3_temp, by = "column") %>% 
       f_log_table("Live capture columns captured under multiple groups", g_file_log)
     
-    print(glue::glue("CRITICAL ERROR: Regex needs to be refined. It currently identifies same column under various grouping"))
+    print(glue::glue("CRITICAL ERROR: Regex needs to be refined. It currently identifies same column under multiple question grouping"))
     print(glue::glue("Please see log file for more information"))
 
   } else {
@@ -136,6 +136,7 @@ if (is.null(nrow(col_list))) {
     counter <- 0
     pb <- utils::txtProgressBar(min = 0, max = length(questions), style = 3, width = 50)
     
+    # For each question category
     for (q in questions) {
       
       # create a variable temp_all_values in the main file that combines values from all relevant variables
@@ -149,7 +150,8 @@ if (is.null(nrow(col_list))) {
       table_with_relevant_cols <- d_01_B %>%
         select(temp_id, all_of(list_of_columns)) %>%
         mutate(temp_all_values = "")
-        
+      
+      # For each column within this question  
       for (i in 1:length(list_of_columns)){
         table_with_relevant_cols <- table_with_relevant_cols %>%
           mutate(temp_all_values = paste0(temp_all_values, 
@@ -158,7 +160,7 @@ if (is.null(nrow(col_list))) {
                                                  paste0("|", make_col_names(.[, i+1])))))
         # f_progress(i/length(list_of_columns), counter/length(questions))
       }
-    
+      
       table_with_relevant_cols <- table_with_relevant_cols %>%
         select(temp_id, temp_all_values)
     
@@ -185,6 +187,7 @@ if (is.null(nrow(col_list))) {
       last2 <- substr(q, len - 1, len)
       start <- ifelse(last == "_", "o", ifelse(last2 == "_o" | last2 == "_O", "", "_o"))
       
+      # For each response to the question
       for (j in 1:num_column_values){
         
         column_new <- paste0("z_", q, start, j, "_", column_values[j, "value_colnames"]) %>%
@@ -216,14 +219,15 @@ if (is.null(nrow(col_list))) {
           rbind(new_df)
       }
       
-      rm(pb2)
-      
       counter = counter + 1
       utils::setTxtProgressBar(pb, counter)
       
       d_01_B <- d_01_B %>%
-        select(-temp_all_values)
+        select(-temp_all_values) 
+        # %>% select(-all_of(list_of_columns))
     }
+    
+    # End of question category loop
     
     d_01_B <- d_01_B %>%
       select(-temp_id)
