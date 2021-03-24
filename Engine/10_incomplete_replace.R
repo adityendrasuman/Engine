@@ -26,6 +26,7 @@ print(glue::glue("=============================================="))
 print(glue::glue("Picking mapping for incomplete responses from the excel interface..."))
 map <- openxlsx::read.xlsx(g_file_path, namedRegion = "incomplete_R", colNames = F) %>% 
   filter(X3 != "~") %>% 
+  filter(X3 != X2) %>% 
   unique() %>% 
   filter_all(any_vars(!is.na(.)))
 
@@ -73,8 +74,6 @@ if (nrow(map) == 0){
   }
 }
 
-Sys.sleep(5)
-
 #====================================================
 
 # Log of run ----
@@ -96,3 +95,10 @@ rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 
 # save environment in a session temp variable ----
 save.image(file=file.path(g_wd, "env.RData"))
+
+# Close the R code
+print(glue::glue("\n\nAll done!"))
+for(i in 1:3){
+  print(glue::glue("Finishing in: {4 - i} sec"))
+  Sys.sleep(1)
+}
