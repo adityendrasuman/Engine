@@ -202,8 +202,8 @@ if (length(var_outlier) > 0){
   }
 }
 
-Sys.sleep(3)
-
+d_01_Octa9 %>%
+  write.table(file = file.path("d_01_Octa9.csv"), sep=",", col.names = T, row.names = F)
 #====================================================
 
 # Log of run ----
@@ -225,3 +225,10 @@ rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 
 # save environment in a session temp variable ----
 save.image(file=file.path(g_wd, "env.RData"))
+
+# Close the R code ----
+print(glue::glue("\n\nAll done!"))
+for(i in 1:3){
+  print(glue::glue("Finishing in: {4 - i} sec"))
+  Sys.sleep(1)
+}
