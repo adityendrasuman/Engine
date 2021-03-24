@@ -23,7 +23,9 @@ print(glue::glue("Package status: {error}"))
 print(glue::glue("=============================================="))
 #====================================================
 
-print(glue::glue("Searching for strings with over {args[2]} characters..."))
+threshold = as.numeric(threshold)
+
+print(glue::glue("Searching for strings with {threshold} or more characters..."))
 
 list_of_variables <- d_01_B %>%
   colnames()
@@ -35,13 +37,13 @@ summary <- purrr::map_dfr(list_of_variables, function(var) {
     nchar() %>%
     max(na.rm = TRUE)
   
-  if (temp >= args[2]) {
+  if (temp >= threshold) {
     d_01_B %>%
       select(response = !!var) %>%
       count(response) %>%
       mutate(no_of_char = nchar(response),
              variable = var) %>%
-      filter(no_of_char >= args[2]) %>%
+      filter(no_of_char >= threshold) %>%
       select(-n) %>%
       return()
   }
