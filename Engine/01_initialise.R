@@ -27,7 +27,7 @@ error = f_libraries(
 
 print(glue::glue("RUNNING R SERVER ..."))
 print(glue::glue("Library status: {error}"))
-print(glue::glue("=============================================="))
+print(glue::glue("\n"))
 #====================================================
 
 # global variables ----
