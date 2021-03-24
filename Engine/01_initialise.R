@@ -29,13 +29,6 @@ print(glue::glue("RUNNING R SERVER ..."))
 print(glue::glue("Library status: {error}"))
 print(glue::glue("\n"))
 
-# Log of run ----
-if (args[6] == "refresh") {str = "Loads the last saved environment and refreshes all the global variables using the latest interface"} 
-if (args[6] == "reset") {str = "Initialises a blank environment with all the global variables using the latest interface"}
-
-glue::glue("===================== Running '01_initialise.R' =====================") %>% f_log_string(g_file_log) 
-glue::glue("{str}")%>% f_log_string(g_file_log)
-
 #====================================================
 
 # global variables ----
@@ -56,6 +49,12 @@ unlink(g_file_plot)
 #====================================================
 
 # Log of run ----
+if (args[6] == "refresh") {str = "Loads the last saved environment and refreshes all the global variables using the latest interface"} 
+if (args[6] == "reset") {str = "Initialises a blank environment with all the global variables using the latest interface"}
+
+glue::glue("===================== Running '01_initialise.R' =====================") %>% f_log_string(g_file_log) 
+glue::glue("{str}")%>% f_log_string(g_file_log)
+
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
 glue::glue("\n") %>% f_log_string(g_file_log)
 
