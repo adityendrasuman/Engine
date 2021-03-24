@@ -23,7 +23,7 @@ print(glue::glue("Package status: {error}"))
 print(glue::glue("=============================================="))
 #====================================================
 
-threshold = as.numeric(threshold)
+threshold = as.numeric(args[2])
 
 print(glue::glue("Searching for strings with {threshold} or more characters..."))
 
