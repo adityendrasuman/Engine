@@ -20,7 +20,8 @@ error = f_libraries(
 )
 print(glue::glue("RUNNING R SERVER ..."))
 print(glue::glue("Package status: {error}"))
-print(glue::glue("=============================================="))
+print(glue::glue("\n"))
+
 #====================================================
 
 threshold = as.numeric(args[2])

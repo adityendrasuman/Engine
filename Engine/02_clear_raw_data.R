@@ -22,7 +22,7 @@ error = f_libraries(
 )
 print(glue::glue("RUNNING R SERVER ..."))
 print(glue::glue("Package status: {error}"))
-print(glue::glue("=============================================="))
+print(glue::glue("\n"))
 #====================================================
 
 rm(list = ls(pattern = "^d_[0-9]+"))

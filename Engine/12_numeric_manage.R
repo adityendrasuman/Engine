@@ -20,7 +20,15 @@ error = f_libraries(
 )
 print(glue::glue("RUNNING R SERVER..."))
 print(glue::glue("Package status: {error}"))
-print(glue::glue("=============================================="))
+print(glue::glue("\n"))
+
+# Log of run ----
+cat(glue::glue("===================== Running '12_numeric_manage.R' ====================="), 
+    file=g_file_log, sep="\n", append=TRUE)
+
+cat(glue::glue("This code ensures that numeric columns are appropriately readable, removes NA values and outliers, and generates report"), 
+    file=g_file_log, sep="\n", append=TRUE)
+
 #====================================================
 
 print(glue::glue("Picking inputs on numeric columns from the excel interface..."))
@@ -207,12 +215,6 @@ d_01_Octa9 %>%
 #====================================================
 
 # Log of run ----
-cat(glue::glue("===================== Running '12_numeric_manage.R' ====================="), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-cat(glue::glue("This code ensures that numeric columns are appropriately readable, removes NA values and outliers, and generates report"), 
-    file=g_file_log, sep="\n", append=TRUE)
-
 total_time = Sys.time() - start_time
 cat(glue::glue("finished run in {round(total_time, 0)} secs"), 
     file=g_file_log, sep="\n", append=TRUE)
