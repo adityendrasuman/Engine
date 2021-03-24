@@ -23,7 +23,7 @@ print(glue::glue("Package status: {error}"))
 print(glue::glue("=============================================="))
 #====================================================
 
-print(glue::glue("Searching for strings with over 30 characters..."))
+print(glue::glue("Searching for strings with over {args[2]} characters..."))
 
 list_of_variables <- d_01_B %>%
   colnames()
@@ -35,13 +35,13 @@ summary <- purrr::map_dfr(list_of_variables, function(var) {
     nchar() %>%
     max(na.rm = TRUE)
   
-  if (temp >= 30) {
+  if (temp >= args[2]) {
     d_01_B %>%
       select(response = !!var) %>%
       count(response) %>%
       mutate(no_of_char = nchar(response),
              variable = var) %>%
-      filter(no_of_char >= 30) %>%
+      filter(no_of_char >= args[2]) %>%
       select(-n) %>%
       return()
   }
@@ -65,7 +65,7 @@ Sys.sleep(0)
 cat(glue::glue("===================== Running '09_incomplete_id.R' ====================="), 
     file=g_file_log, sep="\n", append=TRUE)
 
-cat(glue::glue("This code identifies potentially incomplete responses in the dataset by looking at responses longer than 30 chars"), 
+cat(glue::glue("This code identifies potentially incomplete responses in the dataset by looking at responses longer than user-provided chars"), 
     file=g_file_log, sep="\n", append=TRUE)
 
 total_time = Sys.time() - start_time
