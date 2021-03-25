@@ -15,37 +15,38 @@ load("env.RData")
 
 # load librarise ----
 error = f_libraries(
-  necessary.std = c("openxlsx", "glue"),
+  necessary.std = c("openxlsx", "dplyr", "glue"),
   necessary.github = c()
 )
 print(glue::glue("RUNNING R SERVER ..."))
 print(glue::glue("Package status: {error}"))
 print(glue::glue("\n"))
+
+# Log of run ----
+glue::glue("===================== Running '03_upload_rd.R' =====================") %>% f_string_log(g_file_log)
+glue::glue("This code uploads raw data into R") %>% f_string_log(g_file_log)
+
 #====================================================
 
-print(glue::glue("Importing raw data from the excel interface..."))
+glue::glue("Importing raw data from the excel interface...") %>% f_log_string(g_file_log)
 d_01 <- openxlsx::read.xlsx(g_file_path, namedRegion = "raw_data", colNames = T)
-print(glue::glue("Imported data has {ncol(d_01)} columns and {nrow(d_01)} rows"))
+glue::glue("Imported data has {ncol(d_01)} columns and {nrow(d_01)} rows") %>% f_log_string(g_file_log)
 
-Sys.sleep(3)
 #====================================================
 
 # Log of run ----
-cat(glue::glue("===================== Running '04_upload_rd.R' ====================="), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-cat(glue::glue("This code uploads raw data into R"), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-total_time = Sys.time() - start_time
-cat(glue::glue("finished run in {round(total_time, 0)} secs"), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-cat(glue::glue("\n"), 
-    file=g_file_log, sep="\n", append=TRUE)
+glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
+glue::glue("\n\n") %>% f_log_string(g_file_log)
 
 # remove unnecessary variables from environment ----
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 
 # save environment in a session temp variable ----
 save.image(file=file.path(g_wd, "env.RData"))
+
+# Close the R code ----
+print(glue::glue("\n\nAll done!"))
+for(i in 1:3){
+  print(glue::glue("Finishing in: {4 - i} sec"))
+  Sys.sleep(1)
+}

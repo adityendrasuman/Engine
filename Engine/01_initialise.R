@@ -29,6 +29,10 @@ print(glue::glue("RUNNING R SERVER ..."))
 print(glue::glue("Library status: {error}"))
 print(glue::glue("\n"))
 
+# Log of run ----
+if (args[6] == "refresh") {str = "Refresh: Loads the last saved environment and refreshes all the global variables using the latest interface"} 
+if (args[6] == "reset") {str = "Reset: Initialises a blank environment with all the global variables using the latest interface"}
+
 #====================================================
 
 # global variables ----
@@ -49,14 +53,10 @@ unlink(g_file_plot)
 #====================================================
 
 # Log of run ----
-if (args[6] == "refresh") {str = "Loads the last saved environment and refreshes all the global variables using the latest interface"} 
-if (args[6] == "reset") {str = "Initialises a blank environment with all the global variables using the latest interface"}
-
 glue::glue("===================== Running '01_initialise.R' =====================") %>% f_log_string(g_file_log) 
 glue::glue("{str}")%>% f_log_string(g_file_log)
-
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
-glue::glue("\n") %>% f_log_string(g_file_log)
+glue::glue("\n\n") %>% f_log_string(g_file_log)
 
 # remove unnecessary variables from environment ----
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
@@ -64,4 +64,9 @@ rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 # save environment in a session temp variable ----
 save.image(file=file.path(g_wd, "env.RData"))
 
-Sys.sleep(3)
+# Close the R code ----
+print(glue::glue("\n\nAll done!"))
+for(i in 1:3){
+  print(glue::glue("Finishing in: {4 - i} sec"))
+  Sys.sleep(1)
+}

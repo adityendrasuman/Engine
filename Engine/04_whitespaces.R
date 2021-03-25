@@ -15,12 +15,16 @@ load("env.RData")
 
 # load libraries ----
 error = f_libraries(
-  necessary.std = c("dplyr", "stringr", "profvis"),
+  necessary.std = c("dplyr", "stringr", "profvis", "glue"),
   necessary.github = c()
 )
 print(glue::glue("RUNNING R SERVER ..."))
 print(glue::glue("Package status: {error}"))
 print(glue::glue("\n"))
+
+# Log of run ----
+glue::glue("===================== Running '05_whitespaces.R' =====================") %>% f_string_log(g_file_log)
+glue::glue("This code trims responses for whitespaces around them") %>% f_string_log(g_file_log)
 
 #====================================================
 
@@ -33,27 +37,17 @@ whitespaces <- paste(c("^\\s+.+\\s+$", ".+\\s+$", "^\\s+.+$"), collapse = "|")
 summary <- f_id_char(d_01, whitespaces)
 
 if(is.null(nrow(summary))) {
-  print(glue::glue("Any leading or lagging white spaces has been removed"))
+  glue::glue("Any leading or lagging white spaces has been removed") %>% f_log_string(g_file_log)
 } else if(nrow(summary) > 0) {
-  print(glue::glue("All white spaces could not be removed"))
-  print(glue::glue("Please remove manually in the raw data and upload it again"))
+  glue::glue("All white spaces could not be removed") %>% f_log_string(g_file_log)
+  glue::glue("Please remove manually in the raw data and upload it again") %>% f_log_string(g_file_log)
 }
 
 #====================================================
 
 # Log of run ----
-cat(glue::glue("===================== Running '05_whitespaces.R' ====================="), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-cat(glue::glue("This code trims responses for whitespaces around them"), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-total_time = Sys.time() - start_time
-cat(glue::glue("finished run in {round(total_time, 0)} secs"), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-cat(glue::glue("\n"), 
-    file=g_file_log, sep="\n", append=TRUE)
+glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
+glue::glue("\n\n") %>% f_log_string(g_file_log)
 
 # remove unnecessary variables from environment ----
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
@@ -61,7 +55,7 @@ rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 # save environment in a session temp variable ----
 save.image(file=file.path(g_wd, "env.RData"))
 
-# Close the R code
+# Close the R code ----
 print(glue::glue("\n\nAll done!"))
 for(i in 1:3){
   print(glue::glue("Finishing in: {4 - i} sec"))
