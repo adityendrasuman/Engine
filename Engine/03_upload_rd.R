@@ -23,8 +23,8 @@ print(glue::glue("Package status: {error}"))
 print(glue::glue("\n"))
 
 # Log of run ----
-glue::glue("===================== Running '03_upload_rd.R' =====================") %>% f_string_log(g_file_log)
-glue::glue("This code uploads raw data into R") %>% f_string_log(g_file_log)
+glue::glue("===================== Running '03_upload_rd.R' =====================") %>% f_log_string(g_file_log)
+glue::glue("This code uploads raw data into R") %>% f_log_string(g_file_log)
 
 #====================================================
 

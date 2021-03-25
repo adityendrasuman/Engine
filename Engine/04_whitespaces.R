@@ -23,8 +23,8 @@ print(glue::glue("Package status: {error}"))
 print(glue::glue("\n"))
 
 # Log of run ----
-glue::glue("===================== Running '05_whitespaces.R' =====================") %>% f_string_log(g_file_log)
-glue::glue("This code trims responses for whitespaces around them") %>% f_string_log(g_file_log)
+glue::glue("===================== Running '05_whitespaces.R' =====================") %>% f_log_string(g_file_log)
+glue::glue("This code trims responses for whitespaces around them") %>% f_log_string(g_file_log)
 
 #====================================================
 
