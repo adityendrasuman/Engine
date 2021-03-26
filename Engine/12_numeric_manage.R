@@ -18,16 +18,13 @@ error = f_libraries(
   necessary.std = c("glue", "dplyr", "rlang", "stringr"),
   necessary.github = c()
 )
-print(glue::glue("RUNNING R SERVER..."))
-print(glue::glue("Package status: {error}"))
-print(glue::glue("\n"))
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
 
 # Log of run ----
-cat(glue::glue("===================== Running '12_numeric_manage.R' ====================="), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-cat(glue::glue("This code ensures that numeric columns are appropriately readable, removes NA values and outliers, and generates report"), 
-    file=g_file_log, sep="\n", append=TRUE)
+glue::glue("===================== Running '12_numeric_manage.R' =====================") %>% f_log_string(g_file_log)
+glue::glue("This code ensures that numeric columns are appropriately readable, removes NA values and outliers, and generates report") %>% f_log_string(g_file_log)
 
 #====================================================
 

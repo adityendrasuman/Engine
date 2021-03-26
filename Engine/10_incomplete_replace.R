@@ -18,9 +18,13 @@ error = f_libraries(
   necessary.std = c("dplyr", "stringr", "openxlsx", "rlang"),
   necessary.github = c()
 )
-print(glue::glue("RUNNING R SERVER ..."))
-print(glue::glue("Package status: {error}"))
-print(glue::glue("\n"))
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
+
+# Log of run ----
+glue::glue("===================== Running '10_incomplete_replace.R' =====================") %>% f_log_string(g_file_log)
+glue::glue("This code replaces incomplete responses in the dataset indicated by the user") %>% f_log_string(g_file_log)
 
 #====================================================
 
@@ -76,13 +80,6 @@ if (nrow(map) == 0){
 }
 
 #====================================================
-
-# Log of run ----
-cat(glue::glue("===================== Running '10_incomplete_replace.R' ====================="), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-cat(glue::glue("This code replaces incomplete responses in the dataset indicated by the user"), 
-    file=g_file_log, sep="\n", append=TRUE)
 
 # Log of run ----
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)

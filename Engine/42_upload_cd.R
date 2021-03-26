@@ -17,9 +17,14 @@ error = f_libraries(
   necessary.std = c("openxlsx", "glue"),
   necessary.github = c()
 )
-print(glue::glue("RUNNING R SERVER ..."))
-print(glue::glue("Package status: {error}"))
-print(glue::glue("\n"))
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
+
+# Log of run ----
+glue::glue("===================== Running '42_upload_cd.R' =====================") %>% f_log_string(g_file_log) 
+glue::glue("This code uploads newly created columns into the R environment and deletes datasets from the cleanup stage") %>% f_log_string(g_file_log)
+
 #====================================================
 
 print(glue::glue("Importing clean data ..."))
@@ -30,10 +35,6 @@ rm("^d_01.*$")
 #====================================================
 
 # Log of run ----
-glue::glue("===================== Running '42_upload_cd.R' =====================") %>% f_log_string(g_file_log) 
-
-glue::glue("This code uploads newly created columns into the R environment and deletes datasets from the cleanup stage") %>% f_log_string(g_file_log)
-
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
 glue::glue("\n") %>% f_log_string(g_file_log)
 

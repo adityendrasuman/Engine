@@ -17,9 +17,14 @@ error = f_libraries(
   necessary.std = c("dplyr"),
   necessary.github = c()
 )
-print(glue::glue("RUNNING R SERVER ..."))
-print(glue::glue("Package status: {error}"))
-print(glue::glue("\n"))
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
+
+# Log of run ----
+glue::glue("===================== Running '41_download.R' =====================") %>% f_log_string(g_file_log) 
+glue::glue("This code downloadss cleanedup data from the R environment for importing into the interface") %>% f_log_string(g_file_log)
+
 #====================================================
 
 d_01_D %>%
@@ -29,10 +34,6 @@ print(glue::glue("Data is being prepared for importing into the interface. Pleas
 #====================================================
 
 # Log of run ----
-glue::glue("===================== Running '41_download.R' =====================") %>% f_log_string(g_file_log) 
-
-glue::glue("This code downloadss cleanedup data from the R environment for importing into the interface") %>% f_log_string(g_file_log)
-
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
 glue::glue("\n") %>% f_log_string(g_file_log)
 

@@ -19,9 +19,13 @@ error = f_libraries(
   necessary.std = c("purrr", "dplyr", "rlang", "tidyselect", "tibble", "glue", "srvyr", "ggplot2"),
   necessary.github = c()
 )
-print(glue::glue("RUNNING R SERVER ..."))
-print(glue::glue("Package status: {error}"))
-print(glue::glue("\n"))
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
+
+# Log of run ----
+glue::glue("===================== Running '72_analyse_xy_one_one.R' =====================") %>% f_log_string(g_file_log) 
+glue::glue("This analyses given y agianst given x variables, with default filters") %>% f_log_string(g_file_log)
 
 #====================================================
 question_creator <- function(query, i){

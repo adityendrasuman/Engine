@@ -18,9 +18,13 @@ error = f_libraries(
   necessary.std = c("dplyr", "stringr"),
   necessary.github = c()
 )
-print(glue::glue("RUNNING R SERVER ..."))
-print(glue::glue("Package status: {error}"))
-print(glue::glue("\n"))
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
+
+# Log of run ----
+glue::glue("===================== Running '11_numeric_id.R' =====================") %>% f_log_string(g_file_log)
+glue::glue("This code identifies columns in the data that have one or more full numeric response") %>% f_log_string(g_file_log)
 
 #====================================================
 
@@ -61,13 +65,6 @@ summary %>%
   write.table(file = file.path("temp.csv"), sep=",", col.names = F, row.names = F)
 
 #====================================================
-
-# Log of run ----
-cat(glue::glue("===================== Running '11_numeric_id.R' ====================="), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-cat(glue::glue("This code identifies columns in the data that have one or more full numeric response"), 
-    file=g_file_log, sep="\n", append=TRUE)
 
 # Log of run ----
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)

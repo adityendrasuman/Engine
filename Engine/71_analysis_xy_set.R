@@ -19,9 +19,13 @@ error = f_libraries(
   necessary.std = c("dplyr", "rlang", "ggplot2", "gridExtra"),
   necessary.github = c()
 )
-print(glue::glue("RUNNING R SERVER ..."))
-print(glue::glue("Package status: {error}"))
-print(glue::glue("\n"))
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
+
+# Log of run ----
+glue::glue("===================== Running '71_analyse_xy_set.R' =====================") %>% f_log_string(g_file_log) 
+glue::glue("This analyses each combination between a given set of y variables agianst a set of x variables, with default filters") %>% f_log_string(g_file_log)
 
 #====================================================
 
