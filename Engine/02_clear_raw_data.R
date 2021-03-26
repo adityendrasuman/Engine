@@ -20,22 +20,24 @@ error = f_libraries(
   necessary.std = c("glue", "dplyr"),
   necessary.github = c()
 )
-print(glue::glue("RUNNING R SERVER ..."))
-print(glue::glue("Package status: {error}"))
-print(glue::glue("\n"))
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
 
 # Log of run ----
 glue::glue("===================== Running '02_clear_raw_data.R' =====================") %>% f_log_string(g_file_log)
 glue::glue("This code deletes raw data and all subsequent datasets from R") %>% f_log_string(g_file_log)
+glue::glue("\n") %>% f_log_string(g_file_log)
 
 #====================================================
 
 rm(list = ls(pattern = "^d_[0-9]+"))
+glue::glue("Success: All datasets deleted") %>% f_log_string(g_file_log)
 
 #====================================================
 
 # Log of run ----
-glue::glue("Success: All datasets deleted") %>% f_log_string(g_file_log)
+glue::glue("\n") %>% f_log_string(g_file_log)
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
 glue::glue("\n\n") %>% f_log_string(g_file_log)
 

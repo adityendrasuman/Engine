@@ -18,9 +18,14 @@ error = f_libraries(
   necessary.std = c("dplyr", "stringr", "openxlsx"),
   necessary.github = c()
 )
-print(glue::glue("RUNNING R SERVER ..."))
-print(glue::glue("Package status: {error}"))
-print(glue::glue("\n"))
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
+
+# Log of run ----
+glue::glue("===================== Running '05_weird_chars_id.R' =====================") %>% f_log_string(g_file_log)
+glue::glue("This code identifies unrecognised characters in the data based on user suggestions in the excel interface") %>% f_log_string(g_file_log)
+glue::glue("\n") %>% f_log_string(g_file_log)
 
 #====================================================
 
@@ -37,16 +42,7 @@ summary <- f_id_char(d_01, weird_chr)
 summary %>% 
   write.table(file = file.path("temp.csv"), sep=",", col.names = F, row.names = F)
 
-Sys.sleep(0)
-
 #====================================================
-
-# Log of run ----
-cat(glue::glue("===================== Running '06_weird_chars_id.R' ====================="), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-cat(glue::glue("This code identifies unrecognised characters in the data based on user suggestions in the excel interface"), 
-    file=g_file_log, sep="\n", append=TRUE)
 
 # Log of run ----
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)

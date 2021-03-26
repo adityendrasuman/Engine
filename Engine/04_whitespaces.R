@@ -18,13 +18,14 @@ error = f_libraries(
   necessary.std = c("dplyr", "stringr", "profvis", "glue"),
   necessary.github = c()
 )
-print(glue::glue("RUNNING R SERVER ..."))
-print(glue::glue("Package status: {error}"))
-print(glue::glue("\n"))
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
 
 # Log of run ----
-glue::glue("===================== Running '05_whitespaces.R' =====================") %>% f_log_string(g_file_log)
+glue::glue("===================== Running '04_whitespaces.R' =====================") %>% f_log_string(g_file_log)
 glue::glue("This code trims responses for whitespaces around them") %>% f_log_string(g_file_log)
+glue::glue("\n") %>% f_log_string(g_file_log)
 
 #====================================================
 
@@ -46,6 +47,7 @@ if(is.null(nrow(summary))) {
 #====================================================
 
 # Log of run ----
+glue::glue("\n") %>% f_log_string(g_file_log)
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
 glue::glue("\n\n") %>% f_log_string(g_file_log)
 

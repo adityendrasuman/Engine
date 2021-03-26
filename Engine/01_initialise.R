@@ -25,9 +25,9 @@ error = f_libraries(
   necessary.github = c()
 )
 
-print(glue::glue("RUNNING R SERVER ..."))
-print(glue::glue("Library status: {error}"))
-print(glue::glue("\n"))
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
 
 # Log of run ----
 if (args[6] == "refresh") {str = "Refresh: Loads the last saved environment and refreshes all the global variables using the latest interface"} 
@@ -55,6 +55,7 @@ unlink(g_file_plot)
 # Log of run ----
 glue::glue("===================== Running '01_initialise.R' =====================") %>% f_log_string(g_file_log) 
 glue::glue("{str}")%>% f_log_string(g_file_log)
+glue::glue("\n") %>% f_log_string(g_file_log)
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
 glue::glue("\n\n") %>% f_log_string(g_file_log)
 

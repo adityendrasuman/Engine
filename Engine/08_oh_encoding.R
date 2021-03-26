@@ -18,16 +18,14 @@ error = f_libraries(
   necessary.std = c("glue", "dplyr", "stringr", "purrr", "utils"),
   necessary.github = c()
 )
-print(glue::glue("RUNNING R SERVER ..."))
-print(glue::glue("Package status: {error}"))
-print(glue::glue("\n"))
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
 
 # Log of run ----
-cat(glue::glue("===================== Running '08_oh_encoding.R' ====================="), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-cat(glue::glue("This code broke a list of 'Live-Capture' columns provided in the excel interface into constituent columns with Yes/No values"), 
-    file=g_file_log, sep="\n", append=TRUE)
+glue::glue("===================== Running '08_oh_encoding.R' =====================") %>% f_log_string(g_file_log)
+glue::glue("This code broke a list of 'Live-Capture' columns provided in the excel interface into constituent columns with Yes/No values") %>% f_log_string(g_file_log)
+glue::glue("\n") %>% f_log_string(g_file_log)
 
 #====================================================
 
@@ -55,14 +53,14 @@ make_col_names <- function(vector) {
 d_01_B <- d_01_A %>% 
   mutate(temp_id = row_number())
 
-print(glue::glue("Importing 'Live Capture' column names from the excel interface..."))
+glue::glue("Importing 'Live Capture' column names from the excel interface...") %>% print()
 
 col_list <- openxlsx::read.xlsx(g_file_path, namedRegion = "body_OHE_columns", colNames = F) 
 
 if (is.null(nrow(col_list))) {
   
-  print(glue::glue("No column names found for OH Encoding. Either use a Regex pattern to create them or enter them manually in the excel interface"))
-  print(glue::glue("If no 'Live Capture' columns need conversion, then click 'skip' and move to the next step"))
+  glue::glue("No column names found for OH Encoding. Either use a Regex pattern to create them or enter them manually in the excel interface") %>% f_log_string(g_file_log)
+  glue::glue("If no 'Live Capture' columns need conversion, then click 'skip' and move to the next step") %>% f_log_string(g_file_log)
   
 } else {
   
@@ -127,8 +125,8 @@ if (is.null(nrow(col_list))) {
       right_join(summary3_temp, by = "column") %>% 
       f_log_table("Live capture columns captured under multiple groups", g_file_log)
     
-    print(glue::glue("CRITICAL ERROR: Regex needs to be refined. It currently identifies same column under multiple question grouping"))
-    print(glue::glue("Please see log file for more information"))
+    glue::glue("CRITICAL ERROR: Regex needs to be refined. It currently identifies same column under multiple question grouping") %>% f_log_string(g_file_log)
+    glue::glue("Please see log file for more information") %>% f_log_string(g_file_log)
 
   } else {
     

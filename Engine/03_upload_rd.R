@@ -18,23 +18,25 @@ error = f_libraries(
   necessary.std = c("openxlsx", "dplyr", "glue"),
   necessary.github = c()
 )
-print(glue::glue("RUNNING R SERVER ..."))
-print(glue::glue("Package status: {error}"))
-print(glue::glue("\n"))
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
 
 # Log of run ----
 glue::glue("===================== Running '03_upload_rd.R' =====================") %>% f_log_string(g_file_log)
 glue::glue("This code uploads raw data into R") %>% f_log_string(g_file_log)
+glue::glue("\n") %>% f_log_string(g_file_log)
 
 #====================================================
 
-glue::glue("Importing raw data from the excel interface...") %>% f_log_string(g_file_log)
+glue::glue("Importing raw data from the excel interface...") %>% print()
 d_01 <- openxlsx::read.xlsx(g_file_path, namedRegion = "raw_data", colNames = T)
 glue::glue("Imported data has {ncol(d_01)} columns and {nrow(d_01)} rows") %>% f_log_string(g_file_log)
 
 #====================================================
 
 # Log of run ----
+glue::glue("\n") %>% f_log_string(g_file_log)
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
 glue::glue("\n\n") %>% f_log_string(g_file_log)
 

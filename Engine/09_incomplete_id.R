@@ -18,15 +18,20 @@ error = f_libraries(
   necessary.std = c("dplyr", "purrr", "stringr"),
   necessary.github = c()
 )
-print(glue::glue("RUNNING R SERVER ..."))
-print(glue::glue("Package status: {error}"))
-print(glue::glue("\n"))
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
+
+# Log of run ----
+glue::glue("===================== Running '09_incomplete_id.R' =====================") %>% f_log_string(g_file_log)
+glue::glue("This code identifies potentially incomplete responses in the dataset by looking at responses longer than user-provided chars") %>% f_log_string(g_file_log)
+glue::glue("\n") %>% f_log_string(g_file_log)
 
 #====================================================
 
 threshold = as.numeric(args[2])
 
-print(glue::glue("Searching for strings with {threshold} or more characters..."))
+glue::glue("Searching for strings with {threshold} or more characters...") %>% print()
 
 list_of_variables <- d_01_B %>%
   colnames()
@@ -61,13 +66,6 @@ if (nrow(summary) > 0) {
 }
 
 #====================================================
-
-# Log of run ----
-cat(glue::glue("===================== Running '09_incomplete_id.R' ====================="), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-cat(glue::glue("This code identifies potentially incomplete responses in the dataset by looking at responses longer than user-provided chars"), 
-    file=g_file_log, sep="\n", append=TRUE)
 
 # Log of run ----
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)

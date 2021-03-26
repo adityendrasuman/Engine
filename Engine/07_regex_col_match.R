@@ -18,16 +18,14 @@ error = f_libraries(
   necessary.std = c("glue", "dplyr", "stringr", "purrr"),
   necessary.github = c()
 )
-print(glue::glue("RUNNING R SERVER ..."))
-print(glue::glue("Package status: {error}"))
-print(glue::glue("\n"))
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
 
 # Log of run ----
-cat(glue::glue("===================== Running '07_regex_col_match.R' ====================="), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-cat(glue::glue("This code identifies list of columns corresponding to the regex input for 'Live Capture'"), 
-    file=g_file_log, sep="\n", append=TRUE)
+glue::glue("===================== Running '07_regex_col_match.R' =====================") %>% f_log_string(g_file_log)
+glue::glue("This code identifies list of columns corresponding to the regex input for 'Live Capture'") %>% f_log_string(g_file_log)
+glue::glue("\n") %>% f_log_string(g_file_log)
 
 #====================================================
 
@@ -37,7 +35,7 @@ if (args[3] == ""){args[3] = ".+"}
 
 if (args[2] == "") {
   
-  print(glue::glue("Incomplete user input found for the 'Live Capture' columns. Please provide reg-ex inputs and retry."))
+  glue::glue("Incomplete user input found for the 'Live Capture' columns. Please provide reg-ex inputs and retry.") %>% f_log_string(g_file_log)
 
 } else {
   
@@ -85,24 +83,23 @@ if (args[2] == "") {
   
   if (nrow(summary_temp) > 0){
     
-    print(glue::glue("CRITICAL ERROR: Regex needs to be refined. It currently identifies same column under various groupings"))
-    print(glue::glue("Such cases are highlighted in red cells"))
+    glue::glue("CRITICAL ERROR: Regex needs to be refined. It currently identifies same column under various groupings") %>% f_log_string(g_file_log)
+    glue::glue("Such cases are highlighted in red cells in the interface") %>% f_log_string(g_file_log)
 
   } else {
     
-    print(glue::glue("{} questions identified for conversion into OH Encoding"))
-    print(glue::glue("SUCCESS: Regex could map columns uniquely - i.e. each 'Live Capture' column will be combined in only one question"))
+    glue::glue("{length(question)} questions identified for conversion into OH Encoding") %>% f_log_string(g_file_log)
+    glue::glue("SUCCESS: Regex could map columns uniquely - i.e. each 'Live Capture' column will be combined in only one question") %>% f_log_string(g_file_log)
     
   }
   
   summary %>% 
     write.table(file = file.path("temp.csv"), sep=",", col.names = F, row.names = F)
-  
 }
-
 #====================================================
 
 # Log of run ----
+glue::glue("\n") %>% f_log_string(g_file_log)
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
 glue::glue("\n\n") %>% f_log_string(g_file_log)
 

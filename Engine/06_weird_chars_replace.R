@@ -18,9 +18,14 @@ error = f_libraries(
   necessary.std = c("dplyr", "stringr", "openxlsx"),
   necessary.github = c()
 )
-print(glue::glue("RUNNING R SERVER ..."))
-print(glue::glue("Package status: {error}"))
-print(glue::glue("\n"))
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
+
+# Log of run ----
+glue::glue("===================== Running '06_weird_chars_replace.R' =====================")
+glue::glue("This code attempts to remove unrecognised characters from the data, based on user suggestions in the excel interface")
+glue::glue("\n") %>% f_log_string(g_file_log)
 
 #====================================================
 
@@ -53,25 +58,18 @@ weird_chr <- paste(c("[^\x01-\x7F]", supplied_weird_chr[[1]]), collapse = "|")
 summary <- f_id_char(d_01_A, weird_chr)
 
 if(is.null(nrow(summary))) {
-  print(glue::glue("Any occurance of weird characters has been replaced"))
+  glue::glue("Any occurance of weird characters has been replaced") %>% f_log_string(g_file_log)
 } else if(nrow(summary) > 0) {
-  print(glue::glue("All occurances of weird characters could not be removed."))
-  print(glue::glue("Please check log file for the values that could not be removed"))
-  print(glue::glue("Please remove manually in the raw data and upload it again"))
+  glue::glue("All occurances of weird characters could not be removed.") %>% f_log_string(g_file_log)
+  glue::glue("Please check log file for the values that could not be removed") %>% f_log_string(g_file_log)
+  glue::glue("Please remove manually in the raw data and upload it again") %>% f_log_string(g_file_log)
 }
 
 #====================================================
 
 # Log of run ----
-cat(glue::glue("===================== Running '07_weird_chars_replace.R' ====================="), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-cat(glue::glue("This code attempts to remove unrecognised characters from the data, based on user suggestions in the excel interface"), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-# Log of run ----
 if (!is.null(nrow(summary))){
-  f_log_table(summary, "List of Unrecognised Characters that could not be removed", g_file_log)
+  summary %>% f_log_table("List of Unrecognised Characters that could not be removed", g_file_log)
 }
 
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
