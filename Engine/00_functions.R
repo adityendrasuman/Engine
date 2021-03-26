@@ -8,7 +8,8 @@ f_libraries <- function(necessary.std, necessary.github){
   # install missing packages from standard library
   if(length(missing.std)){
     print(paste("installing standard packages that are not installed: ", missing.std))
-    suppressMessages(suppressWarnings(install.packages(missing.std)))
+    suppressMessages(suppressWarnings(install.packages(missing.std, 
+                                                       repos = "http://cran.us.r-project.org")))
   }
   
   # install missing packages from github
