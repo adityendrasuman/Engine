@@ -69,16 +69,13 @@ cat(glue::glue("===================== Running '07_weird_chars_replace.R' =======
 cat(glue::glue("This code attempts to remove unrecognised characters from the data, based on user suggestions in the excel interface"), 
     file=g_file_log, sep="\n", append=TRUE)
 
+# Log of run ----
 if (!is.null(nrow(summary))){
   f_log_table(summary, "List of Unrecognised Characters that could not be removed", g_file_log)
 }
 
-total_time = Sys.time() - start_time
-cat(glue::glue("finished run in {round(total_time, 0)} secs"), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-cat(glue::glue("\n"), 
-    file=g_file_log, sep="\n", append=TRUE)
+glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
+glue::glue("\n\n") %>% f_log_string(g_file_log)
 
 # remove unnecessary variables from environment ----
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))

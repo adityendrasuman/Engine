@@ -35,7 +35,6 @@ glue::glue("===================== Running '42_upload_cd.R' =====================
 glue::glue("This code uploads newly created columns into the R environment and deletes datasets from the cleanup stage") %>% f_log_string(g_file_log)
 
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
-
 glue::glue("\n") %>% f_log_string(g_file_log)
 
 # remove unnecessary variables from environment ----

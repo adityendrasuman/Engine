@@ -34,7 +34,6 @@ glue::glue("===================== Running '41_download.R' ====================="
 glue::glue("This code downloadss cleanedup data from the R environment for importing into the interface") %>% f_log_string(g_file_log)
 
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
-
 glue::glue("\n") %>% f_log_string(g_file_log)
 
 # remove unnecessary variables from environment ----

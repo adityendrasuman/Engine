@@ -115,14 +115,9 @@ graph %>%
 
 #====================================================
 
-# Acknowledgement of run ----
-log_file = "log - analysis_1.txt"
-unlink(log_file)
-cat("... Run completed", file=log_file, sep="\n", append=TRUE)
-cat(glue::glue("environment contains: {sapply(ls(pattern = '^(d_|g_|f_)'), toString)}"),
-    file=log_file, sep="\n", append=TRUE)
-cat(glue::glue("error: {error}"), file=log_file, sep="\n", append=TRUE)
-# shell.exec(log_file)
+# Log of run ----
+glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
+glue::glue("\n\n") %>% f_log_string(g_file_log)
 
 # remove unnecessary variables from environment ----
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))

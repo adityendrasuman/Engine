@@ -84,12 +84,9 @@ cat(glue::glue("===================== Running '10_incomplete_replace.R' ========
 cat(glue::glue("This code replaces incomplete responses in the dataset indicated by the user"), 
     file=g_file_log, sep="\n", append=TRUE)
 
-total_time = Sys.time() - start_time
-cat(glue::glue("finished run in {round(total_time, 0)} secs"), 
-    file=g_file_log, sep="\n", append=TRUE)
-
-cat(glue::glue("\n"), 
-    file=g_file_log, sep="\n", append=TRUE)
+# Log of run ----
+glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
+glue::glue("\n\n") %>% f_log_string(g_file_log)
 
 # remove unnecessary variables from environment ----
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
