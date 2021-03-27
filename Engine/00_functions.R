@@ -6,7 +6,7 @@ f_libraries <- function(necessary.std, necessary.github){
   missing.github <- necessary.github[!(necessary.github %in% installed.packages()[,"Package"])]
   lib_path <- file.path(path.expand('~'), "ExR", "Rlib")
   
-  dir.create(lib_path, recursive = TRUE)
+    dir.create(lib_path, recursive = TRUE, showWarnings = FALSE)
 
   # install missing packages from standard library
   if(length(missing.std)){
