@@ -1,13 +1,17 @@
 # LOAD/INSTALL NEEDED LIBRARIES
 f_libraries <- function(necessary.std, necessary.github){
   
-  # list of missing packages
+  # Define and create user lib path (if it doesnt exist) where they have write permission for sure
+  lib_path <- file.path(path.expand('~'), "ExR", "Rlib")
+  dir.create(lib_path, recursive = TRUE, showWarnings = FALSE)
+
+  # Add user libpath to .libPaths()
+  .libPaths(c(.libPaths(), lib_path))
+  
+  # check list of missing packages in the libpaths
   missing.std <- necessary.std[!(necessary.std %in% installed.packages()[,"Package"])]
   missing.github <- necessary.github[!(necessary.github %in% installed.packages()[,"Package"])]
-  lib_path <- file.path(path.expand('~'), "ExR", "Rlib")
-  
-    dir.create(lib_path, recursive = TRUE, showWarnings = FALSE)
-
+    
   # install missing packages from standard library
   if(length(missing.std)){
     print(paste("installing standard packages that are not installed: ", missing.std))
@@ -33,7 +37,7 @@ f_libraries <- function(necessary.std, necessary.github){
   # load all the packages into the environment
   for (lib in unique(c(necessary.std, necessary.github))){
     cond <- suppressMessages(suppressWarnings(require(lib, character.only = TRUE,
-                                                      lib = lib_path)))
+                                                      quietly = TRUE)))
     loaded <- c(loaded, cond)
     if (cond == F) {missing <- c(missing, lib)}
   }
