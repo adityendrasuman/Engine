@@ -4,12 +4,16 @@ f_libraries <- function(necessary.std, necessary.github){
   # list of missing packages
   missing.std <- necessary.std[!(necessary.std %in% installed.packages()[,"Package"])]
   missing.github <- necessary.github[!(necessary.github %in% installed.packages()[,"Package"])]
+  lib_path <- file.path(path.expand('~'), "ExR", "Rlib")
   
+  dir.create(lib_path, showWarnings = FALSE)
+
   # install missing packages from standard library
   if(length(missing.std)){
     print(paste("installing standard packages that are not installed: ", missing.std))
     suppressMessages(suppressWarnings(install.packages(missing.std, 
-                                                       repos = "http://cran.us.r-project.org")))
+                                                       repos = "http://cran.us.r-project.org",
+                                                       lib = lib_path)))
   }
   
   # install missing packages from github
@@ -18,7 +22,9 @@ f_libraries <- function(necessary.std, necessary.github){
     print("installing ...")
     
     if("surveytools" %in% missing.github) {
-      suppressWarnings(suppressMessages(devtools::install_github("devvartpoddar/surveytools", ref = "logging")))
+      suppressWarnings(suppressMessages(devtools::install_github("devvartpoddar/surveytools", 
+                                                                 ref = "logging",
+                                                                 lib = lib_path)))
     }
   }
   
@@ -26,7 +32,8 @@ f_libraries <- function(necessary.std, necessary.github){
   missing <- vector()
   # load all the packages into the environment
   for (lib in unique(c(necessary.std, necessary.github))){
-    cond <- suppressMessages(suppressWarnings(require(lib, character.only = TRUE)))
+    cond <- suppressMessages(suppressWarnings(require(lib, character.only = TRUE,
+                                                      lib = lib_path)))
     loaded <- c(loaded, cond)
     if (cond == F) {missing <- c(missing, lib)}
   }
