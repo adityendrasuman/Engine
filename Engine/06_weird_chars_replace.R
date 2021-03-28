@@ -65,6 +65,7 @@ if(is.null(nrow(summary))) {
   glue::glue("Please remove manually in the raw data and upload it again") %>% f_log_string(g_file_log)
 }
 
+d_01_B <- d_01_A # IN CASE LIVE CAPTURE IS SKIPPED
 #====================================================
 
 # Log of run ----
