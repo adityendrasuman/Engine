@@ -15,7 +15,7 @@ load("env.RData")
 
 # load librarise ----
 error = f_libraries(
-  necessary.std = c("dplyr", "stringr", "openxlsx"),
+  necessary.std = c("dplyr", "stringr", "openxlsx", "glue"),
   necessary.github = c()
 )
 glue::glue("RUNNING R SERVER ...") %>% print()
