@@ -21,9 +21,9 @@ source(do.call(file.path, as.list(strsplit(paste0(args[2], "00_functions.R"), "\
 
 # load libraries ----
 error = f_libraries(
-  necessary.std = c("dplyr", "forcats", "glue", "ggplot2", "gridExtra", "jsonlite", 
-  	                "openxlsx", "purrr", "profvis", "rlang", "srvyr", "stringr", 
-  	                "stats", "scales", "tidyselect", "tibble", "utils"),
+  necessary.std = c("dplyr", "forcats", "gdata", "glue", "ggplot2", "gridExtra", 
+                    "jsonlite", "openxlsx", "purrr", "profvis", "rlang", "srvyr", 
+                    "stringr", "stats", "scales", "tidyselect", "tibble", "utils"),
   necessary.github = c()
 )
 

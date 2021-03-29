@@ -1,7 +1,7 @@
-# cleanup the environment ----
 rm(list = ls())
 if (!is.null(dev.list())) dev.off()
 cat("\014")
+start_time <- Sys.time()
 
 # capture variable coming from vba ----
 args <- commandArgs(trailingOnly=T)
@@ -14,11 +14,17 @@ load("env.RData")
 
 # load librarise ----
 error = f_libraries(
-  necessary.std = c("dplyr"),
+  necessary.std = c("dplyr", "glue", "gdata"),
   necessary.github = c()
 )
-print(error)
-print("==============================================")
+glue::glue("RUNNING R SERVER ...") %>% print()
+glue::glue("Package status: {error}") %>% print()
+glue::glue("\n") %>% print()
+
+# Log of run ----
+glue::glue("===================== Running '44_skip_logic.R' =====================")
+glue::glue("Uploads skip logic and gets skip-logic analysis")
+glue::glue("\n") %>% f_log_string(g_file_log)
 #====================================================
 
 map <- openxlsx::read.xlsx(g_file_path, namedRegion = "body_skip", colNames = F) %>% 
@@ -135,7 +141,7 @@ for (q_no in question_numbers) {
   
   multiple_q = ifelse(substr(q_no,(nchar(q_no)+1)-1,nchar(q_no))=="_", T, F)
   
-  apply_condn_on_data <- d_01 %>% 
+  apply_condn_on_data <- d_02 %>% 
     mutate(
       value = ifelse(is.na(eval(parse(text=condition))), F, eval(parse(text=condition))),
       condition = ifelse(value, "met", "un-met")
@@ -180,16 +186,18 @@ Sys.sleep(2)
 
 #====================================================
 
-# Acknowledgement of run ----
-log_file = "log - skip_logic_log.txt"
-unlink(log_file)
-cat("... Run completed", file=log_file, sep="\n", append=TRUE)
-cat(glue::glue("environment contains: {sapply(ls(pattern = '^(d_|g_|f_)'), toString)}"), 
-    file=log_file, sep="\n", append=TRUE)
-cat(glue::glue("error: {error}"), file=log_file, sep="\n", append=TRUE)
+# Log of run ----
+glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
+glue::glue("\n\n") %>% f_log_string(g_file_log)
 
 # remove unnecessary variables from environment ----
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 
 # save environment in a session temp variable ----
 save.image(file=file.path(g_wd, "env.RData"))
+
+print(glue::glue("\n\nAll done!"))
+for(i in 1:3){
+  print(glue::glue("Finishing in: {4 - i} sec"))
+  Sys.sleep(1)
+}
