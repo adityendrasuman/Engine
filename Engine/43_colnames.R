@@ -27,7 +27,7 @@ glue::glue("Gets all the column names from the data into the interface")
 glue::glue("\n") %>% f_log_string(g_file_log)
 #====================================================
 
-d_01_D %>%
+d_02 %>%
   colnames() %>%  
   write.table(file = file.path("temp.csv"), sep=",", col.names = F, row.names = F)
 

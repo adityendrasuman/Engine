@@ -2,6 +2,7 @@
 rm(list = ls())
 if (!is.null(dev.list())) dev.off()
 cat("\014")
+start_time <- Sys.time()
 
 # capture variable coming from vba ----
 args <- commandArgs(trailingOnly=T)
@@ -30,7 +31,6 @@ glue::glue("This code uploads newly created columns into the R environment and d
 print(glue::glue("Importing clean data ..."))
 d_02 <- openxlsx::read.xlsx(g_file_path, namedRegion = "cd_all", colNames = T)
 print(glue::glue("Imported data has {ncol(d_02)} columns and {nrow(d_02)} rows"))
-rm("^d_01.*$")
 
 #====================================================
 
