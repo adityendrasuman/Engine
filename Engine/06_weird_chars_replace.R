@@ -1,4 +1,3 @@
-# cleanup the environment ----
 rm(list = ls())
 if (!is.null(dev.list())) dev.off()
 cat("\014")
