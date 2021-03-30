@@ -23,7 +23,7 @@ glue::glue("\n") %>% print()
 
 # Log of run ----
 glue::glue("===================== Running '44_skip_logic.R' =====================")
-glue::glue("Uploads skip logic and gets skip-logic analysis")
+glue::glue("Uploads and analyses skip logic")
 glue::glue("\n") %>% f_log_string(g_file_log)
 #====================================================
 
