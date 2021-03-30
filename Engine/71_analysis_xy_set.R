@@ -2,6 +2,7 @@
 rm(list = ls())
 if (!is.null(dev.list())) dev.off()
 cat("\014")
+start_time <- Sys.time()
 
 # capture variable coming from vba ----
 args <- commandArgs(trailingOnly=T)
@@ -16,7 +17,7 @@ source(file.path(g_excel_backend_temp_nospace_dir_rf, "00_functions.R"))
 
 # load libraries ----
 error = f_libraries(
-  necessary.std = c("dplyr", "rlang", "ggplot2", "gridExtra"),
+  necessary.std = c("dplyr", "rlang", "ggplot2", "gridExtra", "glue"),
   necessary.github = c()
 )
 glue::glue("RUNNING R SERVER ...") %>% print()

@@ -47,6 +47,9 @@ g_file_name                         <- args[5]
 g_file_path                         <- file.path(g_excel_frontend_dir, g_file_name)
 g_wd                                <- g_excel_backend_temp_dir
 
+g_tick                              <- "\u2713"
+g_cross                             <- "\u2715"
+
 g_file_log                          <- file.path(g_excel_frontend_dir, "Latest R logs.txt")
 g_file_plot                         <- file.path(g_excel_frontend_dir, "Latest plots.pdf")
 

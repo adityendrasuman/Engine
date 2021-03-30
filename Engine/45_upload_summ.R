@@ -72,7 +72,7 @@ rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 # save environment in a session temp variable ----
 save.image(file=file.path(g_wd, "env.RData"))
 
-print(glue::glue("\n\nAll done!"))
+print(glue::glue("\n\n All done!"))
 for(i in 1:3){
   print(glue::glue("Finishing in: {4 - i} sec"))
   Sys.sleep(1)
