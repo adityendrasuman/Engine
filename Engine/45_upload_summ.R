@@ -2,6 +2,7 @@
 rm(list = ls())
 if (!is.null(dev.list())) dev.off()
 cat("\014")
+start_time <- Sys.time()
 
 # capture variable coming from vba ----
 args <- commandArgs(trailingOnly=T)
