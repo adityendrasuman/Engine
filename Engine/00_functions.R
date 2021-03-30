@@ -169,14 +169,13 @@ f_cross_tab <- function(.data,
   
 }
 
-
 f_answer_creator <- function(data, s, y, condition_2 = "T", ...){
   
   if (s %in% colnames(d_summ) & !is.na(y) & y != ""){  
     
-    id_cols = c(d_summ["id", s])
-    strata_cols = c(d_summ["strata", s])
-    weight_col = d_summ["weight", s]
+    id_cols = c(d_summ["ID", s])
+    strata_cols = c(d_summ["STRATA", s])
+    weight_col = d_summ["WEIGHT", s]
     
     summariser <- purrr::partial(summariser_base, survey.design = list(
       id = id_cols,

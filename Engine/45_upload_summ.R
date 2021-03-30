@@ -37,6 +37,9 @@ d_summ <- jsonlite::fromJSON(json_str) %>%
   as.data.frame() %>% 
   dplyr::select_if(function(x){any(!is.na(x))})
 
+row.names(d_summ) <- d_summ$NAME
+d_summ["NAME"] <- NULL
+
 for (name1 in colnames(d_summ)){
   name_sym <- name1 %>% 
     rlang::sym()
