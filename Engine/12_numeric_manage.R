@@ -208,7 +208,7 @@ if (length(var_outlier) > 0){
 }
 
 d_01_Octa9 %>%
-  write.table(file = file.path("d_01_Octa9.csv"), sep=",", col.names = T, row.names = F)
+  saveRDS(file = file.path("d_01_Octa9.csv"))
 #====================================================
 
 # Log of run ----
