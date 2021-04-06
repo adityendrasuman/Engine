@@ -446,14 +446,18 @@ f_graph_1 <- function(.answer, x_all, x_label = "", y_label = "", condition = ""
 }
 
 f_plotter <- function(graph, location){
+  
+  fn = file.path(location, 
+                 paste0("Latest plots ", format(Sys.time(), "%Y%m%d_%H%M%S"), ".pdf"))
+    
   ggplot2::ggsave(
     plot = gridExtra::marrangeGrob(graph, nrow=1, ncol=1), 
-    filename=file.path(g_excel_frontend_dir, "Latest plots.pdf"),
+    filename=fn,
     width=16,
     height=6
   )
   
-  shell.exec(file.path(location, "Latest plots.pdf"))
+  shell.exec(fn)
 }
 
 
