@@ -27,8 +27,12 @@ glue::glue("===================== Running '41_download.R' ====================="
 glue::glue("This code downloadss cleanedup data from the R environment for importing into the interface") %>% f_log_string(g_file_log)
 
 #====================================================
+source(file.path(g_excel_backend_temp_dir, "create_new_columns_in_r.R"), 
+       print.eval = TRUE, echo = F)
 
-d_01_D %>%
+df_out <- create_new_col(d_01_D)
+
+df_out %>%
   write.table(file = file.path("temp.csv"), sep=",", col.names = T, row.names = F)
 
 print(glue::glue("Data is being prepared for importing into the interface. Please wait ..."))
