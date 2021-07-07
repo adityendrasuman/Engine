@@ -20,13 +20,8 @@ create_new_col <- function(df_in){
   # ))
   
   # C01: -----
-  df_out <- df_out %>% 
-    mutate(state_new = "BIHAR")
   
   # C02: -----
-  df_out <- df_out %>% 
-    mutate(state_new_2 = "Uttar Pradesh")
-  
   
   # ########################################
   return (df_out)
