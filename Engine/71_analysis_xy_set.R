@@ -17,7 +17,7 @@ source(file.path(g_excel_backend_temp_nospace_dir_rf, "00_functions.R"))
 
 # load libraries ----
 error = f_libraries(
-  necessary.std = c("dplyr", "rlang", "ggplot2", "gridExtra", "glue"),
+  necessary.std = c("dplyr", "rlang", "ggplot2", "gridExtra", "glue", "tibble"),
   necessary.github = c()
 )
 glue::glue("RUNNING R SERVER ...") %>% print()

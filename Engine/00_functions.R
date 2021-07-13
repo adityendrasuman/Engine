@@ -317,6 +317,11 @@ f_graph_1 <- function(.answer, x_all, x_label = "", y_label = "", condition = ""
     dplyr::summarise(n = sum(N)) %>% 
     mutate(n = paste0("(n = ", scales::comma(n, accuracy = 1), ")"))
   
+  cols_response <- c(response = y_label)
+  
+  .answer <- .answer %>% 
+    tibble::add_column(!!!cols_response[!names(cols_response) %in% names(.)])
+  
   .data <- .answer %>% 
     filter(if (len >= 1) group != "Overall" else T) %>%
     select(group, response, value, value_low, value_upp) %>%
