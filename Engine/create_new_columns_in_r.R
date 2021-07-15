@@ -5,6 +5,12 @@
   # if else condition:      case_when
   # (in)equality:           ==, >, <, <=, >=, %in%, |, &, is.na(), !
 
+# For manual run. Always comment this before auto Run
+# load("env.RData")
+# df_in <- d_01_D
+# End of manual run part
+
+
 create_new_col <- function(df_in){
   
   df_out <- df_in
