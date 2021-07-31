@@ -12,7 +12,13 @@ f_libraries <- function(necessary.std, necessary.github){
   # check list of missing packages in the libpaths
   d1 <- installed.packages()
   d2 <- as.data.frame(d1)
-  d3 <- d2[d2$LibPath %in% c(lib_path, lib_default),]
+  d2$LibPath <- gsub("||", "|", gsub("/", "|", gsub("\\\\", "|", d2[,"LibPath"])))
+  allowed_path <- gsub("||", "|", gsub("/", "|", gsub("\\\\", "|", c(lib_path, lib_default))))
+  
+  print(allowed_path)
+  Sys.sleep(5)
+  
+  d3 <- d2[d2$LibPath %in% allowed_path,]
   installed_for_interface <- unlist(d3$Package)
     
   missing.std <- necessary.std[!(necessary.std %in% installed_for_interface)]
