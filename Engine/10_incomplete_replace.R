@@ -29,7 +29,7 @@ glue::glue("This code replaces incomplete responses in the dataset indicated by 
 #====================================================
 
 print(glue::glue("Picking mapping for incomplete responses from the excel interface..."))
-map <- openxlsx::read.xlsx(g_file_path, namedRegion = "incomplete_R", colNames = F) %>% 
+map <- f_read_xl(g_file_path, namedRegion = "incomplete_R", colNames = F) %>% 
   filter(X3 != "~") %>% 
   filter(X3 != X2) %>% 
   unique() %>% 

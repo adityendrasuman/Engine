@@ -29,7 +29,7 @@ glue::glue("\n") %>% f_log_string(g_file_log)
 #====================================================
 
 print(glue::glue("Picking mapping for weird characters from the excel interface..."))
-map <- openxlsx::read.xlsx(g_file_path, namedRegion = "wc3_R", colNames = F) %>% 
+map <- f_read_xl(g_file_path, namedRegion = "wc3_R", colNames = F) %>% 
   unique() %>% 
   filter_all(any_vars(!is.na(.)))
 
@@ -52,7 +52,7 @@ for (var in colnames(d_01_A)){
 close(pb)
 
 print(glue::glue("Double checking..."))
-supplied_weird_chr <- openxlsx::read.xlsx(g_file_path, namedRegion = "wc1_R", colNames = F)
+supplied_weird_chr <- f_read_xl(g_file_path, namedRegion = "wc1_R", colNames = F)
 weird_chr <- paste(c("[^\x01-\x7F]", supplied_weird_chr[[1]]), collapse = "|")
 summary <- f_id_char(d_01_A, weird_chr)
 

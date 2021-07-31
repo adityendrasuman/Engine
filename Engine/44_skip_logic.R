@@ -27,7 +27,7 @@ glue::glue("Uploads and analyses skip logic")
 glue::glue("\n") %>% f_log_string(g_file_log)
 #====================================================
 
-map <- openxlsx::read.xlsx(g_file_path, namedRegion = "body_skip", colNames = F) %>% 
+map <- f_read_xl(g_file_path, namedRegion = "body_skip", colNames = F) %>% 
   unique() %>% 
   select(check_var = X1,
          condition_var = X2,

@@ -30,7 +30,7 @@ glue::glue("\n") %>% f_log_string(g_file_log)
 #====================================================
 
 print(glue::glue("Picking suggestions for weird characters from the excel interface..."))
-supplied_weird_chr <- openxlsx::read.xlsx(g_file_path, namedRegion = "wc1_R", colNames = F) %>% 
+supplied_weird_chr <- f_read_xl(g_file_path, namedRegion = "wc1_R", colNames = F) %>% 
   select(1) %>% 
   filter_all(any_vars(!is.na(.)))
 

@@ -29,7 +29,7 @@ glue::glue("This code ensures that numeric columns are appropriately readable, r
 #====================================================
 
 print(glue::glue("Picking inputs on numeric columns from the excel interface..."))
-map <- openxlsx::read.xlsx(g_file_path, namedRegion = "body_numeric", colNames = F) %>% 
+map <- f_read_xl(g_file_path, namedRegion = "body_numeric", colNames = F) %>% 
   unique()%>% 
   filter_all(any_vars(!is.na(.)))
 

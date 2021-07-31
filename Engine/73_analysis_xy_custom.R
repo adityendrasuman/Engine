@@ -157,7 +157,7 @@ question_creator <- function(data, i){
 }
 
 if (args[2] == "all"){
-  data <- openxlsx::read.xlsx(g_file_path, namedRegion = "xy_custom_all", colNames = T, rowNames = F)
+  data <- f_read_xl(g_file_path, namedRegion = "xy_custom_all", colNames = T, rowNames = F)
 } else {
   json_str <- gsub("~", '"', args[2]) 
   data <- jsonlite::fromJSON(json_str) %>% 

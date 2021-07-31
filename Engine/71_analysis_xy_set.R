@@ -30,7 +30,7 @@ glue::glue("This analyses each combination between a given set of y variables ag
 
 #====================================================
 
-data <- openxlsx::read.xlsx(g_file_path, namedRegion = "xy_set_all", colNames = T, rowNames = F)
+data <- f_read_xl(g_file_path, namedRegion = "xy_set_all", colNames = T, rowNames = F)
 
 data_y <- data %>% 
   select(consider = 1, y = 3, s = 4, descr = 5) %>% 

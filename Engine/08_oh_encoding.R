@@ -55,7 +55,7 @@ d_01_B <- d_01_A %>%
 
 glue::glue("Importing 'Live Capture' column names from the excel interface...") %>% print()
 
-col_list <- openxlsx::read.xlsx(g_file_path, namedRegion = "body_OHE_columns", colNames = F) 
+col_list <- f_read_xl(g_file_path, namedRegion = "body_OHE_columns", colNames = F) 
 
 if (is.null(nrow(col_list))) {
   

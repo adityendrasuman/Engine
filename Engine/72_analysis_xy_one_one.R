@@ -69,7 +69,7 @@ graph <- list()
 
 if (args[2] == "all") {
   
-  query <- openxlsx::read.xlsx(g_file_path, namedRegion = "xy_one_one_all", colNames = T, rowNames = F) %>% 
+  query <- f_read_xl(g_file_path, namedRegion = "xy_one_one_all", colNames = T, rowNames = F) %>% 
     filter(!is.na(sl)) %>% 
     filter(sl != "")
   
