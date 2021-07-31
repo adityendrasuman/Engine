@@ -4,14 +4,15 @@ f_libraries <- function(necessary.std, necessary.github){
   # Define and create user lib path (if it doesnt exist) where they have write permission for sure
   lib_path <- file.path(path.expand('~'), "ExR", "Rlib")
   dir.create(lib_path, recursive = TRUE, showWarnings = FALSE)
-
+  lib_default <- .libPaths(c(""))
+  
   # Add user libpath to .libPaths()
   .libPaths(c(lib_path, .libPaths()))
   
   # check list of missing packages in the libpaths
   d1 <- installed.packages()
   d2 <- as.data.frame(d1)
-  d3 <- d2[d2$LibPath == lib_path,]
+  d3 <- d2[d2$LibPath %in% c(lib_path, lib_default),]
   installed_for_interface <- unlist(d3$Package)
     
   missing.std <- necessary.std[!(necessary.std %in% installed_for_interface)]
