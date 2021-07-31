@@ -60,7 +60,7 @@ f_open_xl <- function(path, namedRegion, colNames){
     }
   )
   
-  if (success = F){
+  if (success == F){
     df <- openxlsx::readWorkbook(path) %>% 
       openxlsx::read.xlsx(namedRegion = namedRegion, colNames = colNames)
   }
