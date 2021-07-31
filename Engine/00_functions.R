@@ -15,8 +15,8 @@ f_libraries <- function(necessary.std, necessary.github){
   installed_for_interface <- installed.packages() %>% 
     as.data.frame() %>% 
     dplyr::filter(LibPath == lib_path) %>% 
-    select(Package) %>% 
-    unlist()
+    dplyr::select(Package) %>% 
+    dplyr::unlist()
     
   missing.std <- necessary.std[!(necessary.std %in% installed_for_interface)]
   missing.github <- necessary.github[!(necessary.github %in% installed_for_interface)]
