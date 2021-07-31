@@ -6,11 +6,20 @@ f_libraries <- function(necessary.std, necessary.github){
   dir.create(lib_path, recursive = TRUE, showWarnings = FALSE)
 
   # Add user libpath to .libPaths()
-  .libPaths(c(.libPaths(), lib_path))
+  .libPaths(c(lib_path, .libPaths()))
+  
+  # install dplyr if not already
+  install.packages("dplyr", repos = "http://cran.us.r-project.org", lib = lib_path)
   
   # check list of missing packages in the libpaths
-  missing.std <- necessary.std[!(necessary.std %in% installed.packages()[,"Package"])]
-  missing.github <- necessary.github[!(necessary.github %in% installed.packages()[,"Package"])]
+  installed_for_interface <- installed.packages() %>% 
+    as.data.frame() %>% 
+    dplyr::filter(LibPath == lib_path) %>% 
+    select(Package) %>% 
+    unlist()
+    
+  missing.std <- necessary.std[!(necessary.std %in% installed_for_interface)]
+  missing.github <- necessary.github[!(necessary.github %in% installed_for_interface)]
     
   # install missing packages from standard library
   if(length(missing.std)){
