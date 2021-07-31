@@ -8,15 +8,11 @@ f_libraries <- function(necessary.std, necessary.github){
   # Add user libpath to .libPaths()
   .libPaths(c(lib_path, .libPaths()))
   
-  # install dplyr if not already
-  install.packages("dplyr", repos = "http://cran.us.r-project.org", lib = lib_path)
-  
   # check list of missing packages in the libpaths
-  installed_for_interface <- installed.packages() %>% 
-    as.data.frame() %>% 
-    dplyr::filter(LibPath == lib_path) %>% 
-    dplyr::select(Package) %>% 
-    dplyr::unlist()
+  d1 <- installed.packages()
+  d2 <- as.data.frame(d1)
+  d3 <- d2[d2$LibPath == lib_path,]
+  installed_for_interface <- unlist(d3$Package)
     
   missing.std <- necessary.std[!(necessary.std %in% installed_for_interface)]
   missing.github <- necessary.github[!(necessary.github %in% installed_for_interface)]
