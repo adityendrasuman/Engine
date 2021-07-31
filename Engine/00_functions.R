@@ -71,6 +71,7 @@ f_read_xl <- function(path, namedRegion, colNames){
   )
   
   if (success == F){
+    print("slowed due to openxlsx library version issue (to be fixed soon) ...")
     df <- openxlsx::loadWorkbook(path) %>% 
       openxlsx::read.xlsx(namedRegion = namedRegion, colNames = colNames)
   }
