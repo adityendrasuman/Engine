@@ -30,7 +30,7 @@ glue::glue("\n") %>% f_log_string(g_file_log)
 #====================================================
 
 glue::glue("Importing raw data from the excel interface...") %>% print()
-d_01 <- openxlsx::read.xlsx(g_file_path, namedRegion = "raw_data", colNames = T)
+d_01 <- f_read_xl(g_file_path, namedRegion = "raw_data", colNames = T)
 glue::glue("Imported data has {ncol(d_01)} columns and {nrow(d_01)} rows") %>% f_log_string(g_file_log)
 
 #====================================================

@@ -47,6 +47,28 @@ f_libraries <- function(necessary.std, necessary.github){
   if (all(loaded)) return("All libraries loaded successfully")
 }
 
+# Apply workaround for openxlsx not loading xlsm file starting version 4.2.4
+f_open_xl <- function(path, namedRegion, colNames){
+  
+  success <- T
+  success <- tryCatch(
+    {
+      df <- openxlsx::read.xlsx(path, namedRegion = namedRegion, colNames = colNames)
+    },
+    error = function(e){
+      retrun (F)
+    }
+  )
+  
+  if (success = F){
+    df <- openxlsx::readWorkbook(path) %>% 
+      openxlsx::read.xlsx(namedRegion = namedRegion, colNames = colNames)
+  }
+  
+  return (df)
+}
+
+
 # Nested progress bars
 f_progress <- function(...)    {
   graphics.off()
