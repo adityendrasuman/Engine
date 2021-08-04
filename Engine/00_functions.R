@@ -58,12 +58,12 @@ f_libraries <- function(necessary.std, necessary.github){
 }
 
 # Apply workaround for openxlsx not loading xlsm file starting version 4.2.4
-f_read_xl <- function(path, namedRegion, colNames){
+f_read_xl <- function(path, namedRegion, colNames, rowNames){
   
   success <- T
   success <- tryCatch(
     {
-      df <- openxlsx::read.xlsx(path, namedRegion = namedRegion, colNames = colNames)
+      df <- openxlsx::read.xlsx(path, namedRegion = namedRegion, colNames = colNames, rowNames = rowNames)
     },
     error = function(e){
       return (F)
@@ -73,7 +73,7 @@ f_read_xl <- function(path, namedRegion, colNames){
   if (success == F){
     glue::glue("slowed due to openxlsx library version issue (to be fixed soon) ...") %>% print()
     df <- openxlsx::loadWorkbook(path) %>% 
-      openxlsx::read.xlsx(namedRegion = namedRegion, colNames = colNames)
+      openxlsx::read.xlsx(namedRegion = namedRegion, colNames = colNames,  rowNames = rowNames)
   }
   
   return (df)
