@@ -111,7 +111,7 @@ for (q_no in question_numbers) {
     } else {
       
       # if a single response ...
-      if (sign == "not_in") {sign == "!="}
+      if (sign == "not in") {sign == "!="}
       if (sign == "in") {sign == "=="}
       if (response_is_string > 0){
         
