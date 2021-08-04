@@ -130,7 +130,7 @@ for (q_no in question_numbers) {
     next_condition <- skip_filtered_for_q[i, "next_condition"]    
     
     # apend to previous condition and make it redy to append the condition string using the "next condition" string
-    if (sign == "not_in") {
+    if (sign == "not in") {
       condition <- glue::glue("{condition} !({var} %in% {response_string}) {next_condition}")
     } else if(sign == "in") {
       condition <- glue::glue("{condition} {var} %in% {response_string} {next_condition}")
