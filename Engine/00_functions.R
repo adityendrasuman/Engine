@@ -58,7 +58,7 @@ f_libraries <- function(necessary.std, necessary.github){
 }
 
 # Apply workaround for openxlsx not loading xlsm file starting version 4.2.4
-f_read_xl <- function(path, namedRegion, colNames, rowNames){
+f_read_xl <- function(path, namedRegion, colNames = F, rowNames = F){
   
   success <- T
   success <- tryCatch(
