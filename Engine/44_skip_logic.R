@@ -27,7 +27,9 @@ glue::glue("Uploads and analyses skip logic")
 glue::glue("\n") %>% f_log_string(g_file_log)
 #====================================================
 
-map <- f_read_xl(g_file_path, namedRegion = "body_skip", colNames = F) %>% 
+map <- f_read_xl(g_file_path, namedRegion = "body_skip", colNames = F)
+
+map <- map %>% 
   unique() %>% 
   select(check_var = X1,
          condition_var = X2,
@@ -56,7 +58,6 @@ colnames(d_skip) <- c("q_no", "condition")
 
 # For each such question number ...
 for (q_no in question_numbers) {
-  
   # filter the skip logic table for rows that contain condition variable
   skip_filtered_for_q <- map %>% 
     filter(check_var == q_no)
@@ -79,6 +80,7 @@ for (q_no in question_numbers) {
     
     # get relation between condition variable and the values
     sign <- skip_filtered_for_q[i, "sign"]
+    
     
     # get all allowed values of condition variable, i.e. response vector
     response_vector <- skip_filtered_for_q[i, "response"] %>% 
@@ -181,6 +183,14 @@ for (q_no in question_numbers) {
                        condition = condition) %>%
     rbind(d_skip)
 }
+
+skip_logic_log %>%
+  select(var_to_be_checked, 
+         rows_with_values, 
+         num_violations,
+         condition) %>%
+  filter(num_violations > 0) %>% 
+  write.table(file = file.path("temp.csv"), sep=",", col.names = F, row.names = F)
 
 #====================================================
 
