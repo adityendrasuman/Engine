@@ -182,8 +182,6 @@ for (q_no in question_numbers) {
     rbind(d_skip)
 }
 
-Sys.sleep(2)
-
 #====================================================
 
 # Log of run ----
