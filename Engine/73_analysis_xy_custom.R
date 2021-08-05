@@ -17,7 +17,7 @@ source(file.path(g_excel_backend_temp_nospace_dir_rf, "00_functions.R"))
 
 # load libraries ----
 error = f_libraries(
-  necessary.std = c("dplyr", "rlang", "stats", "ggplot2", "scales", "forcats", "jsonlite"),
+  necessary.std = c("dplyr", "rlang", "stats", "ggplot2", "scales", "forcats", "jsonlite", "stringr"),
   necessary.github = c()
 )
 glue::glue("RUNNING R SERVER ...") %>% print()
@@ -157,7 +157,8 @@ question_creator <- function(data, i){
 }
 
 if (args[2] == "all"){
-  data <- f_read_xl(g_file_path, namedRegion = "xy_custom_all", colNames = T, rowNames = F)
+  data <- f_read_xl(g_file_path, namedRegion = "xy_custom_all_temp", colNames = T, rowNames = F) %>% 
+    suppressWarnings()
 } else {
   json_str <- gsub("~", '"', args[2]) 
   data <- jsonlite::fromJSON(json_str) %>% 
@@ -166,6 +167,7 @@ if (args[2] == "all"){
 }
 
 data <- data %>% 
+  dplyr::filter(!grepl("^SECTION ",X1)) %>% 
   mutate(X1 = as.numeric(X1)) %>% 
   filter_all(any_vars(!is.na(.))) %>% 
   mutate(

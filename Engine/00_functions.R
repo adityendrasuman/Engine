@@ -63,7 +63,8 @@ f_read_xl <- function(path, namedRegion, colNames = F, rowNames = F){
   success <- T
   success <- tryCatch(
     {
-      df <- openxlsx::read.xlsx(path, namedRegion = namedRegion, colNames = colNames, rowNames = rowNames)
+      df <- openxlsx::read.xlsx(path, namedRegion = namedRegion, colNames = colNames, 
+                                rowNames = rowNames)
     },
     error = function(e){
       return (F)
@@ -73,7 +74,8 @@ f_read_xl <- function(path, namedRegion, colNames = F, rowNames = F){
   if (success == F){
     glue::glue("slowed due to openxlsx library version issue (to be fixed soon) ...") %>% print()
     df <- openxlsx::loadWorkbook(path) %>% 
-      openxlsx::read.xlsx(namedRegion = namedRegion, colNames = colNames,  rowNames = rowNames)
+      openxlsx::read.xlsx(namedRegion = namedRegion, colNames = colNames,  
+                          rowNames = rowNames)
   }
   
   return (df)
