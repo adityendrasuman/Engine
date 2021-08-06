@@ -215,7 +215,6 @@ skip_logic_log %>%
          value_when_condition_unmet,
          blank_when_condition_met,
          condition) %>%
-  filter(num_violations > 0) %>% 
   write.table(file = file.path("temp.csv"), sep=",", col.names = F, row.names = F)
 
 #====================================================
