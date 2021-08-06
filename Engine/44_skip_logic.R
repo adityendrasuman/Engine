@@ -49,8 +49,8 @@ question_numbers <- map %>%
   unique()
 
 # Overall Summary...
-skip_logic_log <- data.frame(matrix(ncol=7, nrow=0))
-colnames(skip_logic_log) <- c("var_to_be_checked", "rows_with_values", 
+skip_logic_log <- data.frame(matrix(ncol=8, nrow=0))
+colnames(skip_logic_log) <- c("var_to_be_checked", "total_rows", "num_values", 
                               "rows_that_satisfy_condition", "num_violations",
                               "value_when_condition_unmet", "blank_when_condition_met",
                               "condition")
@@ -169,6 +169,10 @@ for (q_no in question_numbers) {
   row_count <- apply_condn_on_data %>% 
     nrow()
   
+  value_count <- apply_condn_on_data %>% 
+    filter(response == "value") %>% 
+    nrow()
+  
   met_count <- apply_condn_on_data %>% 
     filter(condition == "met") %>% 
     nrow()
@@ -178,17 +182,18 @@ for (q_no in question_numbers) {
              (response == "value" & condition == "un-met")) %>% 
     nrow()
   
-  blank_when_cond_met <- apply_condn_on_data %>% 
-    filter(response == "blank" & condition == "met") %>% 
-    nrow()
-  
   value_when_cond_unmet <- apply_condn_on_data %>% 
     filter(response == "value" & condition == "un-met") %>% 
     nrow()
   
+  blank_when_cond_met <- apply_condn_on_data %>% 
+    filter(response == "blank" & condition == "met") %>% 
+    nrow()
+  
   skip_logic_log2 <- data.frame(var_to_be_checked = q_no, 
-                               rows_with_values = row_count, 
-                               rows_that_satisfy_condition = met_count, 
+                               total_rows = row_count, 
+                               num_values = value_count,
+                               rows_that_satisfy_condition = met_count,
                                num_violations = error_count,
                                value_when_condition_unmet = value_when_cond_unmet,
                                blank_when_condition_met = blank_when_cond_met,
@@ -205,6 +210,7 @@ for (q_no in question_numbers) {
 
 skip_logic_log %>%
   select(var_to_be_checked, 
+         num_values,
          num_violations,
          value_when_condition_unmet,
          blank_when_condition_met,
