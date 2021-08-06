@@ -49,8 +49,11 @@ question_numbers <- map %>%
   unique()
 
 # Overall Summary...
-skip_logic_log <- data.frame(matrix(ncol=5, nrow=0))
-colnames(skip_logic_log) <- c("var_to_be_checked", "rows_with_values", "rows_that_satisfy_condition", "num_violations", "condition")
+skip_logic_log <- data.frame(matrix(ncol=7, nrow=0))
+colnames(skip_logic_log) <- c("var_to_be_checked", "rows_with_values", 
+                              "rows_that_satisfy_condition", "num_violations",
+                              "value_when_condition_unmet", "blank_when_condition_met",
+                              "condition")
 
 # Overall Summary...
 d_skip <- data.frame(matrix(ncol=2, nrow=0))
@@ -78,53 +81,55 @@ for (q_no in question_numbers) {
     # get condition variable 
     var <- skip_filtered_for_q[i, "condition_var"]
     
-    # get relation between condition variable and the values
-    sign <- skip_filtered_for_q[i, "sign"]
-    
-    
-    # get all allowed values of condition variable, i.e. response vector
-    response_vector <- skip_filtered_for_q[i, "response"] %>% 
-      strsplit(split = "\\|") %>% 
-      gdata::trim() %>% 
-      unlist()
-    
-    # calculate size of this response vector
-    num_response <- length(response_vector)
-    
-    # check if response vector is numeric or charecter
-    response_is_string <- response_vector %>% 
-      as.numeric() %>% 
-      is.na() %>%
-      suppressWarnings() %>% 
-      sum()
-    
-    if (num_response > 1){
-      if (response_is_string > 0){
-        
-        # if more than one response in string format, create c("a", "b", "c")
-        str <- paste(response_vector, collapse = '", "')
-        response_string <- glue::glue('c("{str}")') 
-      } else {
-        
-        # if more than one response in numeric format, create c(1, 3, 5, 9) 
-        str <- paste(response_vector, collapse = ', ')
-        response_string <- glue::glue('c({str})')
-      }
-    } else {
+    if (!is.na(var)){
       
-      # if a single response ...
-      if (sign == "not in") {sign == "!="}
-      if (sign == "in") {sign == "=="}
-      if (response_is_string > 0){
-        
-        # ... in string format, create "a"
-        str <- response_vector[1]
-        response_string <- glue::glue('"{str}"')
+      # get relation between condition variable and the values
+      sign <- skip_filtered_for_q[i, "sign"]
+      
+      # get all allowed values of condition variable, i.e. response vector
+      response_vector <- skip_filtered_for_q[i, "response"] %>% 
+        strsplit(split = "\\|") %>% 
+        gdata::trim() %>% 
+        unlist()
+      
+      # calculate size of this response vector
+      num_response <- length(response_vector)
+      
+      # check if response vector is numeric or charecter
+      response_is_string <- response_vector %>% 
+        as.numeric() %>% 
+        is.na() %>%
+        suppressWarnings() %>% 
+        sum()
+      
+      if (num_response > 1){
+        if (response_is_string > 0){
+          
+          # if more than one response in string format, create c("a", "b", "c")
+          str <- paste(response_vector, collapse = '", "')
+          response_string <- glue::glue('c("{str}")') 
+        } else {
+          
+          # if more than one response in numeric format, create c(1, 3, 5, 9) 
+          str <- paste(response_vector, collapse = ', ')
+          response_string <- glue::glue('c({str})')
+        }
       } else {
         
-        # ... in numeric format, create 1
-        str <- response_vector[1]
-        response_string <- glue::glue('{str}')
+        # if a single response ...
+        if (sign == "not in") {sign == "!="}
+        if (sign == "in") {sign == "=="}
+        if (response_is_string > 0){
+          
+          # ... in string format, create "a"
+          str <- response_vector[1]
+          response_string <- glue::glue('"{str}"')
+        } else {
+          
+          # ... in numeric format, create 1
+          str <- response_vector[1]
+          response_string <- glue::glue('{str}')
+        }
       }
     }
     
@@ -132,12 +137,16 @@ for (q_no in question_numbers) {
     next_condition <- skip_filtered_for_q[i, "next_condition"]    
     
     # apend to previous condition and make it redy to append the condition string using the "next condition" string
-    if (sign == "not in") {
-      condition <- glue::glue("{condition} !({var} %in% {response_string}) {next_condition}")
-    } else if(sign == "in") {
-      condition <- glue::glue("{condition} {var} %in% {response_string} {next_condition}")
+    if (!is.na(var)){
+      if (sign == "not in") {
+        condition <- glue::glue("{condition} !({var} %in% {response_string}) {next_condition}")
+      } else if(sign == "in") {
+        condition <- glue::glue("{condition} {var} %in% {response_string} {next_condition}")
+      } else {
+        condition <- glue::glue("{condition} {var} {sign} {response_string} {next_condition}")
+      }
     } else {
-      condition <- glue::glue("{condition} {var} {sign} {response_string} {next_condition}")
+      condition <- glue::glue("{condition} {next_condition}")
     }
   }
   
@@ -168,11 +177,21 @@ for (q_no in question_numbers) {
     filter((response == "blank" & condition == "met") |
              (response == "value" & condition == "un-met")) %>% 
     nrow()
-
+  
+  blank_when_cond_met <- apply_condn_on_data %>% 
+    filter(response == "blank" & condition == "met") %>% 
+    nrow()
+  
+  value_when_cond_unmet <- apply_condn_on_data %>% 
+    filter(response == "value" & condition == "un-met") %>% 
+    nrow()
+  
   skip_logic_log2 <- data.frame(var_to_be_checked = q_no, 
                                rows_with_values = row_count, 
                                rows_that_satisfy_condition = met_count, 
                                num_violations = error_count,
+                               value_when_condition_unmet = value_when_cond_unmet,
+                               blank_when_condition_met = blank_when_cond_met,
                                condition = condition) 
   
   skip_logic_log <- skip_logic_log %>% 
@@ -186,8 +205,9 @@ for (q_no in question_numbers) {
 
 skip_logic_log %>%
   select(var_to_be_checked, 
-         rows_with_values, 
          num_violations,
+         value_when_condition_unmet,
+         blank_when_condition_met,
          condition) %>%
   filter(num_violations > 0) %>% 
   write.table(file = file.path("temp.csv"), sep=",", col.names = F, row.names = F)
