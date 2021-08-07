@@ -222,6 +222,9 @@ f_answer_creator <- function(data, s, y, condition_2 = "T", ...){
     x_all <<- c(...)
     
     if (class(data[[y]]) != "numeric"){
+      
+      data[[y_sym]] <- as.character(data[[y_sym]])
+      
       if (length(x_all) == 0){
         
         summary <- data %>%

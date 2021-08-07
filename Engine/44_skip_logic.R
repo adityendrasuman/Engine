@@ -27,7 +27,8 @@ glue::glue("Uploads and analyses skip logic")
 glue::glue("\n") %>% f_log_string(g_file_log)
 #====================================================
 
-map <- f_read_xl(g_file_path, namedRegion = "body_skip", colNames = F)
+map <- f_read_xl(g_file_path, namedRegion = "body_skip", colNames = F) %>% 
+  suppressWarnings()
 
 map <- map %>% 
   unique() %>% 
@@ -48,14 +49,14 @@ question_numbers <- map %>%
   pull(check_var) %>% 
   unique()
 
-# Overall Summary...
+# Overall Summary for export ...
 skip_logic_log <- data.frame(matrix(ncol=8, nrow=0))
 colnames(skip_logic_log) <- c("var_to_be_checked", "total_rows", "num_values", 
                               "rows_that_satisfy_condition", "num_violations",
                               "value_when_condition_unmet", "blank_when_condition_met",
                               "condition")
 
-# Overall Summary...
+# Overall Summary for analysis filters ...
 d_skip <- data.frame(matrix(ncol=2, nrow=0))
 colnames(d_skip) <- c("q_no", "condition")
 
@@ -134,7 +135,8 @@ for (q_no in question_numbers) {
     }
     
     # get the & / | info before connecing the next condition 
-    next_condition <- skip_filtered_for_q[i, "next_condition"]    
+    next_condition <- skip_filtered_for_q[i, "next_condition"] %>% 
+      stringr::str_trim()
     
     # apend to previous condition and make it redy to append the condition string using the "next condition" string
     if (!is.na(var)){
@@ -159,13 +161,24 @@ for (q_no in question_numbers) {
     )
   
   if (multiple_q == T){
-    apply_condn_on_data <- apply_condn_on_data %>% 
-      mutate(response = ifelse(rowSums(select(apply_condn_on_data, matches(q)) != "", na.rm=T) == 0, "blank", "value"))
+    list_of_q <- apply_condn_on_data %>% 
+      select(matches(q)) %>%
+      colnames()
   } else {
-    apply_condn_on_data <- apply_condn_on_data %>% 
-      mutate(response = ifelse(rowSums(select(apply_condn_on_data, all_of(q)) != "", na.rm=T) == 0, "blank", "value"))
+    list_of_q <- apply_condn_on_data %>% 
+      select(all_of(q)) %>%
+      colnames()
   }
   
+  dataframe_of_q <- list_of_q %>%
+    as.data.frame() %>%
+    select("q_no" = 1)
+  
+  apply_condn_on_data <- apply_condn_on_data %>% 
+    mutate(response = ifelse(rowSums(select(apply_condn_on_data, all_of(list_of_q)) != "", na.rm=T) == 0, 
+                             "blank", "value"))
+  
+  # calculate data points for question
   row_count <- apply_condn_on_data %>% 
     nrow()
   
@@ -201,10 +214,9 @@ for (q_no in question_numbers) {
   
   skip_logic_log <- skip_logic_log %>% 
     rbind(skip_logic_log2)
-
   
-  d_skip <- data.frame(q_no = q_no, 
-                       condition = condition) %>%
+  d_skip <- dataframe_of_q %>% 
+    mutate(condition = condition) %>%
     rbind(d_skip)
 }
 
