@@ -27,8 +27,7 @@ glue::glue("Uploads and analyses skip logic")
 glue::glue("\n") %>% f_log_string(g_file_log)
 #====================================================
 
-map <- f_read_xl(g_file_path, namedRegion = "body_skip", colNames = F) %>% 
-  suppressWarnings()
+map <- f_read_xl(g_file_path, namedRegion = "body_skip", colNames = F)
 
 map <- map %>% 
   unique() %>% 

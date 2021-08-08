@@ -1,6 +1,7 @@
 # cleanup the environment ----
 rm(list = ls())
 if (!is.null(dev.list())) dev.off()
+options(survey.lonely.psu="adjust")
 cat("\014")
 start_time <- Sys.time()
 
@@ -157,8 +158,7 @@ question_creator <- function(data, i){
 }
 
 if (args[2] == "all"){
-  data <- f_read_xl(g_file_path, namedRegion = "xy_custom_all_temp", colNames = T, rowNames = F) %>% 
-    suppressWarnings()
+  data <- f_read_xl(g_file_path, namedRegion = "xy_custom_all_temp", colNames = T, rowNames = F)
 } else {
   json_str <- gsub("~", '"', args[2]) 
   data <- jsonlite::fromJSON(json_str) %>% 
@@ -184,13 +184,27 @@ data <- data %>%
   
 data$X1 <- cumsum(!is.na(data$X1))
 
+# Remove blank X variables
+data <- data %>% 
+  filter(!Var.type %in% c("[X]", "FILTER") | !is.na(Variable))
+
+# Remove analysis cards that have blank Y variable
+to_delete <- data %>% 
+  filter(Var.type == "[Y]", is.na(Variable)) %>% 
+  pull(X1)
+
+if (length(to_delete) > 0) {
+  data <- data %>%
+    filter(X1 != to_delete)
+}
+  
 graph <- list()
 
 if (args[2] == "all") {
   
   pb <- txtProgressBar(min = 0, max = max(data$X1), style = 3, width = 40)
   
-  for (q_no in 1:max(data$X1)){
+  for (q_no in unique(data$X1)){
     
     q <- data %>% 
       question_creator(q_no)

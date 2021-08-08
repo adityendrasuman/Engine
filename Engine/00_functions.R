@@ -60,27 +60,22 @@ f_libraries <- function(necessary.std, necessary.github){
 # Apply workaround for openxlsx not loading xlsm file starting version 4.2.4
 f_read_xl <- function(path, namedRegion, colNames = F, rowNames = F){
   
-  success <- T
   success <- tryCatch(
     {
-      df <- openxlsx::read.xlsx(path, namedRegion = namedRegion, colNames = colNames, 
-                                rowNames = rowNames)
+      openxlsx::read.xlsx(path, namedRegion = namedRegion, colNames = colNames, 
+                                rowNames = rowNames, xyz)
     },
     error = function(e){
-      return (F)
+      glue::glue("slowed due to openxlsx library version issue (to be fixed soon) ...") %>% print()
+      df <- openxlsx::loadWorkbook(path) %>% 
+        openxlsx::read.xlsx(namedRegion = namedRegion, colNames = colNames,  
+                              rowNames = rowNames)
+      return(df)
     }
   )
-  
-  if (success == F){
-    glue::glue("slowed due to openxlsx library version issue (to be fixed soon) ...") %>% print()
-    df <- openxlsx::loadWorkbook(path) %>% 
-      openxlsx::read.xlsx(namedRegion = namedRegion, colNames = colNames,  
-                          rowNames = rowNames)
-  }
-  
-  return (df)
-}
 
+  return (success)
+}
 
 # Nested progress bars
 f_progress <- function(...)    {
@@ -492,7 +487,9 @@ f_plotter <- function(graph, location){
   
   fn = file.path(location, 
                  paste0("Latest plots ", format(Sys.time(), "%Y%m%d_%H%M%S"), ".pdf"))
-    
+  
+  graph <- graph[lengths(graph) != 0]
+  
   ggplot2::ggsave(
     plot = gridExtra::marrangeGrob(graph, nrow=1, ncol=1), 
     filename=fn,

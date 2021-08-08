@@ -1,6 +1,7 @@
 # cleanup the environment ----
 rm(list = ls())
 if (!is.null(dev.list())) dev.off()
+options(survey.lonely.psu="adjust")
 cat("\014")
 start_time <- Sys.time()
 
