@@ -23,7 +23,8 @@ source(do.call(file.path, as.list(strsplit(paste0(args[2], "00_functions.R"), "\
 error = f_libraries(
   necessary.std = c("dplyr", "forcats", "gdata", "glue", "ggplot2", "gridExtra", 
                     "jsonlite", "openxlsx", "purrr", "profvis", "rlang", "srvyr", 
-                    "stringr", "stats", "scales", "tidyselect", "tibble", "utils"),
+                    "stringr", "stats", "scales", "tidyselect", "tibble", "utils", 
+                    "tidyr", "caret", "janitor", "e1071"),
   necessary.github = c()
 )
 
