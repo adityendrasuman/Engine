@@ -63,7 +63,7 @@ f_read_xl <- function(path, namedRegion, colNames = F, rowNames = F){
   success <- tryCatch(
     {
       openxlsx::read.xlsx(path, namedRegion = namedRegion, colNames = colNames, 
-                                rowNames = rowNames, xyz)
+                                rowNames = rowNames)
     },
     error = function(e){
       glue::glue("slowed due to openxlsx library version issue (to be fixed soon) ...") %>% print()
