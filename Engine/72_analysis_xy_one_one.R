@@ -34,7 +34,7 @@ question_creator <- function(query, i){
   
   # Get question row
   q <- query %>% 
-    slice(i)
+    filter(row_number() == i)
   
   # Get summariser
   s <- q %>% 
@@ -48,6 +48,8 @@ question_creator <- function(query, i){
   x <- q %>% 
     pull(4)
   
+  if (is.na(x)){x <- character(0)}
+  
   # get y label
   y_label <- q %>% 
     pull(6)
@@ -56,6 +58,8 @@ question_creator <- function(query, i){
   x_label <- q %>% 
     pull(7)
   
+  if (is.na(x_label)){x_label <- character(0)}
+
   condition <- d_skip %>% 
     filter(q_no == y) %>% 
     pull(condition)
