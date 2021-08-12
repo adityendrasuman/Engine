@@ -552,6 +552,13 @@ f_log_table <- function(df, title="", output){
   }
 }
 
+f_grouper <- function(data){
+  data %>% 
+    group_by_all() %>% 
+    count() %>% 
+    as.data.frame()
+}
+
 #___________________----
 f_segmentor <- function(df, y, x, s, forced_sample, ignore_weight_responses = c()){
   
