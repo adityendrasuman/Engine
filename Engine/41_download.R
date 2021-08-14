@@ -27,8 +27,11 @@ glue::glue("===================== Running '41_download.R' ====================="
 glue::glue("This code downloadss cleanedup data from the R environment for importing into the interface") %>% f_log_string(g_file_log)
 
 #====================================================
-source(file.path(g_excel_backend_temp_dir, "create_new_columns_in_r.R"), 
-       print.eval = TRUE, echo = F)
+file_name <- file.path(g_excel_backend_temp_dir, "create_new_columns_in_r.R")
+start <- 23
+file.lines <- scan(file_name, what=character(), skip=start-1, sep='\n', quiet = T) 
+file.lines.collapsed <- paste(file.lines, collapse='\n')
+source(textConnection(file.lines.collapsed), print.eval = TRUE, echo = F)
 
 df_out <- create_new_col(d_01_D)
 
