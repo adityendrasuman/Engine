@@ -5,7 +5,6 @@ start_time <- Sys.time()
 
 # capture variable coming from vba ----
 args <- commandArgs(trailingOnly=T)
-args <- c("C:|Users|User|Dropbox (Dalberg)|VHL - ALL PROJECTS|01. Mon, Nagaland|04 Survey Analysis|01. Analysis|v3|interface history|", "ServerId")
 
 # set working director ---- 
 setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
@@ -62,7 +61,6 @@ colnames(d_skip) <- c("q_no", "condition")
 
 # For each such question number ...
 for (q_no in question_numbers) {
-  print(q_no) 
   # filter the skip logic table for rows that contain condition variable
   skip_filtered_for_q <- map %>% 
     filter(check_var == q_no)
@@ -76,7 +74,6 @@ for (q_no in question_numbers) {
   
   # for each condition ...
   for (i in 1:num_conditions){
-    print(i)
     
     # get variable on which to apply the check 
     q <- skip_filtered_for_q[i, "check_var_name"]
