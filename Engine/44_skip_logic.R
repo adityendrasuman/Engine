@@ -5,6 +5,7 @@ start_time <- Sys.time()
 
 # capture variable coming from vba ----
 args <- commandArgs(trailingOnly=T)
+args <- c("C:|Users|User|Dropbox (Dalberg)|VHL - ALL PROJECTS|01. Mon, Nagaland|04 Survey Analysis|01. Analysis|v3|interface history|", "ServerId")
 
 # set working director ---- 
 setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
@@ -61,6 +62,7 @@ colnames(d_skip) <- c("q_no", "condition")
 
 # For each such question number ...
 for (q_no in question_numbers) {
+  print(q_no) 
   # filter the skip logic table for rows that contain condition variable
   skip_filtered_for_q <- map %>% 
     filter(check_var == q_no)
@@ -74,6 +76,7 @@ for (q_no in question_numbers) {
   
   # for each condition ...
   for (i in 1:num_conditions){
+    print(i)
     
     # get variable on which to apply the check 
     q <- skip_filtered_for_q[i, "check_var_name"]
@@ -202,6 +205,18 @@ for (q_no in question_numbers) {
     filter(response == "blank" & condition == "met") %>% 
     nrow()
   
+  if (error_count > 0) {
+    error_id <- apply_condn_on_data %>% 
+      filter((response == "blank" & condition == "met") |
+               (response == "value" & condition == "un-met")) %>% 
+      select(args[2]) %>% 
+      as.list() %>%
+      paste(collapse=" | ")
+  } else {
+    error_id <- ""
+  }
+  
+  
   skip_logic_log2 <- data.frame(var_to_be_checked = q_no, 
                                total_rows = row_count, 
                                num_values = value_count,
@@ -209,7 +224,8 @@ for (q_no in question_numbers) {
                                num_violations = error_count,
                                value_when_condition_unmet = value_when_cond_unmet,
                                blank_when_condition_met = blank_when_cond_met,
-                               condition = condition) 
+                               condition = condition,
+                               error_id = error_id) 
   
   skip_logic_log <- skip_logic_log %>% 
     rbind(skip_logic_log2)
@@ -225,7 +241,7 @@ skip_logic_log %>%
          num_violations,
          value_when_condition_unmet,
          blank_when_condition_met,
-         condition) %>%
+         error_id) %>%
   write.table(file = file.path("temp.csv"), sep=",", col.names = F, row.names = F)
 
 #====================================================
