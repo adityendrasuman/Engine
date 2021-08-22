@@ -483,6 +483,226 @@ f_graph_1 <- function(.answer, x_all, x_label = "", y_label = "", condition = ""
   return(p)
 }
 
+f_graph_2 <- function(.answer, y, x_all, y_condition = "T", condition = "", numeric_y, colmap){
+  
+  #.answer, x_all, x_label = "", y_label = "", condition = "", numeric_y
+  
+  options(dplyr.summarise.inform = FALSE)
+  
+  y_label <- colmap %>% 
+    filter(X1 == y) %>% 
+    pull(X2)
+  
+  width_x_label = 10
+  width_facet_label = 20
+  font_value_label = 8
+  font_legend_label = 8
+  font_facet_label = 8
+  font_x_label = 8
+  font_caption = 8
+  max_caption_lines = 7
+  
+  if (condition != ""){
+    condition <- condition %>%
+      stringr::str_replace_all("//T //& ", "") %>% 
+      stringr::str_replace_all('"T"', "Everyone") %>% 
+      stringr::str_replace_all("&", "\nAND,") %>% 
+      stringr::str_replace_all("%in%", "in") %>% 
+      stringr::str_replace_all("==", "=")
+    
+    condition <- condition %>% 
+      f_pad_lines(max_caption_lines - 2)
+    
+    condition <- glue::glue("Respondent pool:\n------------------------\n {condition}")
+  }
+  
+  len <- length(x_all)
+  
+  if (len == 0){
+    x_top <- "group" %>% 
+      rlang::sym()
+    
+    x_top_label <- ""
+  }
+  
+  if (len >= 1){
+    x_top <- x_all[1] %>% 
+      rlang::sym()
+    
+    x_top_label <- colmap %>% 
+      filter(X1 == x_top) %>% 
+      pull(X2)
+  }
+  
+  if (len >= 2){
+    x_second <- x_all[2] %>% 
+      rlang::sym()
+    
+    x_second_label <- colmap %>% 
+      filter(X1 == x_second) %>% 
+      pull(X2)
+  }
+  
+  if (len >= 3){
+    x_last <- x_all[len] %>% 
+      rlang::sym()
+    
+    x_last_label <- colmap %>% 
+      filter(X1 == x_last) %>% 
+      pull(X2)
+  }
+  
+  if (len >= 4){
+    x_subsequent <- x_all[3:len - 1] %>% 
+      rlang::syms()
+    
+    x_subsequent_label <- colmap %>% 
+      filter(X1 == x_subsequent) %>% 
+      pull(X2)
+  }
+  
+  n_size <- .answer %>%
+    # filter(if (len >= 1) group != "Overall" else T) %>% 
+    dplyr::group_by(group) %>% 
+    dplyr::summarise(n = sum(N)) %>% 
+    mutate(n = paste0("(n = ", scales::comma(n, accuracy = 1), ")"))
+  
+  cols_response <- c(response = y_label)
+  
+  .answer <- .answer %>% 
+    tibble::add_column(!!!cols_response[!names(cols_response) %in% names(.)])
+  
+  .data <- .answer %>% 
+    # filter(if (len >= 1) group != "Overall" else T) %>%
+    select(group, response, value, value_low, value_upp) %>%
+    dplyr::mutate(value = as.numeric(gsub("%", "", value)),
+                  value_low = as.numeric(gsub("%", "", value_low)),
+                  value_upp = as.numeric(gsub("%", "", value_upp))) %>%
+    left_join(n_size, by = "group")
+  
+  num_x_labels <- nrow(.data)/length(unique(.answer$response))
+  
+  if (len > 0){
+    .data <- .data %>% 
+      tidyr::separate(group, x_all, sep = "\\|")
+  }
+  
+  if (numeric_y == T){
+    .data <- .data %>% 
+      dplyr::arrange(desc(value))
+  }
+  
+  .data <- .data %>% 
+    dplyr::rowwise() %>% 
+    dplyr::mutate(!!x_top := f_pad_lines(paste0(stringr::str_wrap(!!x_top, width = width_x_label), "\n", n), 4)) %>% 
+    mutate(response = forcats::fct_inorder(response)) %>% 
+    mutate(!!x_top := forcats::fct_inorder(!!x_top))
+  
+  ang <- ifelse(num_x_labels > 15, 90, 0) 
+  
+  .data <- .data %>% 
+    filter(ifelse(is.na(eval(parse(text=y_condition))), F, eval(parse(text=y_condition))))
+  
+  # ASSIGN X AXIS
+  if (len == 0){
+    p <- .data %>%
+      ggplot2::ggplot(ggplot2::aes(x = group, y=value, fill = response))
+  } else if (len >= 1){
+    p <- .data %>%
+      ggplot2::ggplot(ggplot2::aes(x=!!x_top, y=value, fill = response))
+  }
+  
+  # ASSIGN AXIS LABELS
+  if (numeric_y == F){
+    p <- p + 
+      ggplot2::ylab("% Responses") + 
+      ggplot2::xlab(x_top_label)
+  } else {
+    y_label <- .answer %>% 
+      slice(1) %>% 
+      pull(response)
+    
+    p <- p + 
+      ggplot2::ylab(y_label) + 
+      ggplot2::xlab(x_top_label)
+  }
+  
+  # ASSIGN FACET GRIDS
+  if (len == 2){
+    p <- p + ggplot2::facet_grid(as.formula(paste0(". ~ ", x_second)), 
+                                 labeller = label_wrap_gen(width = width_facet_label, multi_line = TRUE),
+                                 drop = T,
+                                 scale = "free_x")
+    
+  } else if (len == 3) {
+    p <- p + ggplot2::facet_grid(as.formula(
+      paste0(".", " ~ ", x_second, " + ", x_last)
+    ), 
+    labeller = label_wrap_gen(width = width_facet_label, multi_line = TRUE),
+    drop = T,
+    scale = "free_x")
+    
+  }  else if (len >= 4) {
+    p <- p + ggplot2::facet_grid(as.formula(
+      paste0(".", " ~ ", x_second, " + ", paste(x_subsequent, collapse = " + "), " + ", x_last)
+    ), 
+    labeller = label_wrap_gen(width = width_facet_label, multi_line = TRUE),
+    drop = T,
+    scale = "free_x")
+  }
+  
+  # CREATE FINAL GRAPH
+  p <- p +
+    ggplot2::ggtitle(toupper(y_label)) +
+    ggplot2::labs(caption = condition) +
+    ggplot2::geom_bar(position=ggplot2::position_dodge(0.95), stat="identity") + 
+    ggplot2::geom_errorbar(ggplot2::aes(ymax=value_upp, ymin=value_low), 
+                           position = ggplot2::position_dodge(0.95), 
+                           width = 0.2, size=.5, color="dark red") +
+    ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, 0.1))) +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(vjust = 0.5, size=font_x_label, angle = ang),
+      axis.ticks.x = ggplot2::element_line(colour = "grey"),
+      axis.line.x = ggplot2::element_line(colour = "grey"),
+      
+      axis.text.y = ggplot2::element_blank(),
+      axis.ticks.y = ggplot2::element_blank(),
+      axis.line.y = ggplot2::element_blank(),
+      
+      legend.position = ifelse(numeric_y==T, "none", "top"),
+      legend.justification = ifelse(numeric_y==T, "none", "left"),
+      legend.title = ggplot2::element_blank(),
+      legend.box = "horizontal",
+      legend.text=ggplot2::element_text(size=font_legend_label),
+      legend.key.size = ggplot2::unit(0.3, "cm"),
+      
+      panel.grid.major = ggplot2::element_blank(), 
+      panel.grid.minor = ggplot2::element_blank(),
+      panel.background = ggplot2::element_blank(),
+      panel.spacing = ggplot2::unit(2, "lines"),
+      
+      strip.placement = "outside",
+      strip.text.x = ggplot2::element_text(size = font_facet_label, colour = "black"),
+      
+      plot.caption = ggplot2::element_text(colour = "dark grey", size=font_caption))
+  
+  # DIFFERENCE FOR NUMERIC VS CATEGORICAL
+  if (numeric_y == T){
+    p <- p + 
+      ggplot2::geom_text(ggplot2::aes(label=value), 
+                         position=ggplot2::position_dodge(width=1), 
+                         vjust=-1,
+                         size=3)
+  } else {
+    p <- p + 
+      ggplot2::geom_text(ggplot2::aes(label=scales::number(value, accuracy = 1.1)), 
+                         position=ggplot2::position_dodge(width=1), 
+                         vjust=-1,
+                         size=3)
+  }
+  return(p)
+}
+
 f_plotter <- function(graph, location){
   
   fn = file.path(location, 

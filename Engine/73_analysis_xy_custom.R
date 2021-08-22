@@ -290,8 +290,9 @@ for (q_no in unique(data$X1)){
   }
   
   each_card <- each_card %>% 
-    select(-all_matching_y, -stack_chart)
+    select(-all_matching_y, -stack_chart, -show_condition_sign, -show_condition_value)
   
+  # For each card create list of questions 
   question <- list()
   
   if (single_q == TRUE){
@@ -326,29 +327,39 @@ for (q_no in unique(data$X1)){
     }
   }
   
+  # For each question, create answers and rbind them
+  
   for (q in question){
     
-    answer <- d_02 %>% 
+    numeric_y <- ifelse(class(d_02[[q[[2]]]]) == "numeric", T, F)
+    
+    y_label <- d_colmap %>%
+      filter(X1 == q[[2]]) %>%
+      pull(X2)
+    
+    a <- d_02 %>% 
       f_answer_creator(q[[1]], q[[2]], q[[3]], q[[4]]) %>% 
-      suppressWarnings() 
+      suppressWarnings() %>% 
+      mutate(query = y_label)
     
-    numeric_y = F
-    
-    if (!("response" %in% colnames(answer))){
-      response_value <- each_card %>% 
-        slice(1) %>% 
-        pull(Description)
-      
-      answer <- answer %>%
-        mutate(response = response_value) %>% 
-        dplyr::relocate(response, .after = group)
-      
-      numeric_y = T
-    }
-    
-    graph[[q_no]] <- answer %>% 
-      f_graph_1(q[[4]], q[[3]], y_condition, numeric_y)
+    # if (!("response" %in% colnames(a))){
+    #   response_value <- d_colmap %>% 
+    #     filter(X1 == q[[2]]) %>% 
+    #     pull(X2)
+    #   
+    #   a <- a %>%
+    #     mutate(response = response_value) %>% 
+    #     dplyr::relocate(response, .after = group)
+    # }
   }
+  
+  graph[[q_no]] <- answer %>% 
+    f_graph_2(y = q[[2]],
+              x_all = q[[4]], 
+              y_condition = y_condition, 
+              condition = q[[3]], 
+              numeric_y = numeric_y, 
+              colmap = d_colmap)
 
   setTxtProgressBar(pb, q_no)
 }
