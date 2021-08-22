@@ -328,6 +328,8 @@ for (q_no in unique(data$X1)){
   }
   
   # For each question, create answers and rbind them
+  answer <- data.frame(matrix(ncol=9, nrow=0))
+  colnames(answer) <- c("group", "response", "N", "value", "value_se", "value_low", "value_upp", "pvalue", "sgnf")
   
   for (q in question){
     
@@ -337,25 +339,16 @@ for (q_no in unique(data$X1)){
       filter(X1 == q[[2]]) %>%
       pull(X2)
     
-    a <- d_02 %>% 
+    answer <- d_02 %>% 
       f_answer_creator(q[[1]], q[[2]], q[[3]], q[[4]]) %>% 
       suppressWarnings() %>% 
-      mutate(query = y_label)
-    
-    # if (!("response" %in% colnames(a))){
-    #   response_value <- d_colmap %>% 
-    #     filter(X1 == q[[2]]) %>% 
-    #     pull(X2)
-    #   
-    #   a <- a %>%
-    #     mutate(response = response_value) %>% 
-    #     dplyr::relocate(response, .after = group)
-    # }
+      mutate(question = y_label) %>% 
+      rbind(answer)
   }
   
   graph[[q_no]] <- answer %>% 
     f_graph_2(y = q[[2]],
-              x_all = q[[4]], 
+              x_all = c(q[[4]], "question"), 
               y_condition = y_condition, 
               condition = q[[3]], 
               numeric_y = numeric_y, 
