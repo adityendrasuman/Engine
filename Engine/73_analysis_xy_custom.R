@@ -31,10 +31,9 @@ glue::glue("This analyses given y agianst one or more x variables, with custom f
 
 #====================================================
 
-question_creator <- function(data, i){
+question_creator <- function(card){
   
-  df <- data %>% 
-    filter(X1 == i)
+  df <- card
   
   # get summariser
   s <- df %>% 
@@ -171,22 +170,33 @@ data <- data %>%
   mutate(X1 = as.numeric(X1)) %>% 
   filter_all(any_vars(!is.na(.))) %>% 
   mutate(
+    
     condition_sign = case_when(
       Var.type == "FILTER" ~ lead(Description)),
+    
     condition_value = case_when(
-      Var.type == "FILTER" ~ lead(X6))
-  ) %>% 
+      Var.type == "FILTER" ~ lead(X6)),
+    
+    stack_chart = case_when(
+      Var.type == "[Y]" ~ lead(Flag)),
+    
+    all_matching_y = case_when(
+      Flag_For == "All matching Y" ~ Flag),
+    
+    show_condition_sign = case_when(
+      Var.type == "SHOW" ~ lead(Description)),
+    
+    show_condition_value = case_when(
+      Var.type == "SHOW" ~ lead(X6))) %>%
+  
+  select(-Flag, -Flag_For) %>% 
   filter(!is.na(Var.type)) %>% 
   mutate(sl = row_number()) %>% 
   mutate(X1 = as.numeric(X1)) %>% 
-  select(-RUN, -X6) %>% 
+  select(-Run, -X6) %>% 
   select(sl, everything())
   
 data$X1 <- cumsum(!is.na(data$X1))
-
-# Remove blank X variables
-data <- data %>% 
-  filter(!Var.type %in% c("[X]", "FILTER") | !is.na(Variable))
 
 # Remove analysis cards that have blank Y variable
 to_delete <- data %>% 
@@ -197,58 +207,150 @@ if (length(to_delete) > 0) {
   data <- data %>%
     filter(X1 != to_delete)
 }
+
+# Remove blank X AND FILTER variables
+data <- data %>% 
+  filter(!(Var.type %in% c("[X]", "FILTER") & (is.na(Variable))))
   
 graph <- list()
-
-if (args[2] == "all") {
+pb <- txtProgressBar(min = min(data$X1), max = max(data$X1), style = 3, width = 40)
   
-  pb <- txtProgressBar(min = 0, max = max(data$X1), style = 3, width = 40)
+for (q_no in unique(data$X1)){
   
-  for (q_no in unique(data$X1)){
+  each_card <- data %>% 
+    filter(X1 == q_no)
+  
+  single_q <- each_card %>%
+    slice(1) %>%  
+    pull(all_matching_y) %>% 
+    is.na()
+  
+  cluster_chart <- each_card %>% 
+    slice(1) %>%  
+    pull(stack_chart) %>% 
+    is.na()
+  
+  # Figure out what to show
+  
+  sign <- each_card %>% 
+    filter(Var.type == "SHOW") %>% 
+    pull(show_condition_sign)
+  
+  show_vector <- each_card %>%
+    filter(Var.type == "SHOW") %>% 
+    pull(show_condition_value) %>% 
+    strsplit(split = "\\|") %>% 
+    gdata::trim() %>% 
+    unlist()
+  
+  num_show <- length(show_vector)
+  
+  show_is_string <- show_vector %>% 
+    as.numeric() %>% 
+    is.na() %>%
+    suppressWarnings() %>% 
+    sum()
+  
+  if (num_show > 1){
+    if (show_is_string > 0){
+      
+      # if more than one response in string format, create c("a", "b", "c")
+      str <- paste(show_vector, collapse = '", "')
+      show_string <- glue::glue('c("{str}")') 
+    } else {
+      
+      # if more than one response in numeric format, create c(1, 3, 5, 9) 
+      str <- paste(show_vector, collapse = ', ')
+      show_string <- glue::glue('c({str})')
+    }
+  } else {
     
-    q <- data %>% 
-      question_creator(q_no)
+    # if a single response ...
+    if (sign == "not in") {sign == "!="}
+    if (sign == "in") {sign == "=="}
+    if (show_is_string > 0){
+      
+      # ... in string format, create "a"
+      str <- show_vector[1]
+      show_string <- glue::glue('"{str}"')
+    } else {
+      
+      # ... in numeric format, create 1
+      str <- show_vector[1]
+      show_string <- glue::glue('{str}')
+    }
+  }
+  
+  if (sign == "not in") {
+    y_condition <- glue::glue("!(response %in% {show_string})")
+  } else if(sign == "in") {
+    y_condition <- glue::glue("response %in% {show_string}")
+  } else {
+    y_condition <- glue::glue("response {sign} {show_string}")
+  }
+  
+  each_card <- each_card %>% 
+    select(-all_matching_y, -stack_chart)
+  
+  question <- list()
+  
+  if (single_q == TRUE){
+    
+    question[[1]] <- each_card %>% 
+      question_creator()
+  
+  } else {
+    
+    all_y_key <- each_card %>%
+      filter(Var.type == "[Y]") %>% 
+      pull(Variable)
+    
+    all_y <- d_02 %>% 
+      select(matches(all_y_key)) %>% 
+      colnames()
+    
+    i = 0
+    
+    for (y in all_y){
+
+      i = i + 1
+      
+      card <- each_card %>% 
+        mutate(Variable = case_when(
+          Var.type == "[Y]" ~ y,
+          T ~ Variable
+        ))
+      
+      question[[i]] <- card %>% 
+        question_creator()
+    }
+  }
+  
+  for (q in question){
     
     answer <- d_02 %>% 
       f_answer_creator(q[[1]], q[[2]], q[[3]], q[[4]]) %>% 
-      suppressWarnings()
+      suppressWarnings() 
     
-    numeric_y = ifelse(class(d_02[[q[[2]]]]) == "numeric", T, F)
+    numeric_y = F
+    
+    if (!("response" %in% colnames(answer))){
+      response_value <- each_card %>% 
+        slice(1) %>% 
+        pull(Description)
+      
+      answer <- answer %>%
+        mutate(response = response_value) %>% 
+        dplyr::relocate(response, .after = group)
+      
+      numeric_y = T
+    }
     
     graph[[q_no]] <- answer %>% 
-      f_graph_1(q[[4]], q[[5]], q[[6]], q[[3]], numeric_y)
-    
-    setTxtProgressBar(pb, q_no)
+      f_graph_1(q[[4]], q[[3]], y_condition, numeric_y)
   }
-  
-} else {
-  
-  q_no <- data %>% 
-    slice(1) %>% 
-    pull(X1)
-  
-  q <- question_creator(data, q_no)
 
-  answer <- d_02 %>% 
-    f_answer_creator(q[[1]], q[[2]], q[[3]], q[[4]]) %>% 
-    suppressWarnings()
-  
-  numeric_y = F
-  
-  if (!("response" %in% colnames(answer))){
-    response_value <- data %>% 
-      slice(1) %>% 
-      pull(Description)
-    
-    answer <- answer %>%
-      mutate(response = response_value) %>% 
-      dplyr::relocate(response, .after = group)
-    
-    numeric_y = T
-  }
-  
-  graph[[1]] <- answer %>% 
-    f_graph_1(q[[4]], q[[5]], q[[6]], q[[3]], numeric_y)
+  setTxtProgressBar(pb, q_no)
 }
 
 graph %>% 

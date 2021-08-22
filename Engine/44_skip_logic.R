@@ -133,7 +133,7 @@ for (q_no in question_numbers) {
       }
     }
     
-    # get the & / | info before connecing the next condition 
+    # get the & / | info before connecting the next condition 
     next_condition <- skip_filtered_for_q[i, "next_condition"] %>% 
       stringr::str_trim()
     
