@@ -516,7 +516,7 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
     condition <- condition %>% 
       f_pad_lines(max_caption_lines - 2)
     
-    condition <- glue::glue("Respondent pool:\n------------------------\n {condition}")
+    condition <- glue::glue("Respondent pool:\n------------------------\n{condition}\nShow only: {y_condition}")
   }
   
   len <- length(x_all)
@@ -566,14 +566,19 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
   
   n_size <- .answer %>%
     # filter(if (len >= 1) group != "Overall" else T) %>% 
-    dplyr::group_by(group) %>% 
+    dplyr::group_by(group, question) %>% 
     dplyr::summarise(n = sum(N)) %>% 
     mutate(n = paste0("(n = ", scales::comma(n, accuracy = 1), ")"))
   
   cols_response <- c(response = y_label)
   
-  .answer <- .answer %>% 
-    tibble::add_column(!!!cols_response[!names(cols_response) %in% names(.)])
+  # If response column is not present, add it with value as question string | Replace question with difference
+  .answer 
+  
+  a <- .answer %>% 
+    tibble::add_column(!!!cols_response[!names(cols_response) %in% names(.)]) %>% 
+    mutate(question = stringr::str_replace(question, paste0("\\", y_label), ""))
+    
   
   .data <- .answer %>% 
     # filter(if (len >= 1) group != "Overall" else T) %>%
