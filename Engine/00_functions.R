@@ -485,16 +485,16 @@ f_graph_1 <- function(.answer, x_all, x_label = "", y_label = "", condition = ""
 
 f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric_y, colmap){
   
-  #.answer, x_all, x_label = "", y_label = "", condition = "", numeric_y
-  
   options(dplyr.summarise.inform = FALSE)
   
   y_label <- .answer %>%
     pull(question) %>% 
     unique() %>% 
-    strsplit(" ") %>% 
-    Reduce(intersect, .) %>% 
-    paste(collapse = " ")
+    gsub("\\|:.*$", "", .) %>% 
+    trimws() %>% 
+    unique()
+  
+  y_label <- y_label[1]
     
   width_x_label = 10
   width_facet_label = 20
@@ -511,15 +511,24 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
       stringr::str_replace_all('"T"', "Everyone") %>% 
       stringr::str_replace_all("&", "\nAND,") %>% 
       stringr::str_replace_all("%in%", "in") %>% 
-      stringr::str_replace_all("==", "=")
+      stringr::str_replace_all("==", "=") %>% 
+      trimws()
     
     condition <- condition %>% 
       f_pad_lines(max_caption_lines - 2)
     
-    condition <- glue::glue("Respondent pool:\n------------------------\n{condition}\nShow only: {y_condition}")
+    y_condition2 <- y_condition %>%
+      stringr::str_replace_all("//T //& ", "") %>% 
+      stringr::str_replace_all('"T"', "Everyone") %>% 
+      stringr::str_replace_all("&", "\nAND,") %>% 
+      stringr::str_replace_all("%in%", "in") %>% 
+      stringr::str_replace_all("==", "=") %>% 
+      trimws()
+    
+    condition <- glue::glue("RESPONDENT POOL:\n------------------------\n{condition}\n------------------------\nSHOW ONLY: {y_condition2}")
   }
   
-  len <- length(x_all)
+  len <- length(c(x_all, "question"))
   
   if (len == 0){
     x_top <- "group" %>% 
@@ -529,7 +538,7 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
   }
   
   if (len >= 1){
-    x_top <- x_all[1] %>% 
+    x_top <- c(x_all, "question")[1] %>% 
       rlang::sym()
     
     x_top_label <- colmap %>% 
@@ -538,7 +547,7 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
   }
   
   if (len >= 2){
-    x_second <- x_all[2] %>% 
+    x_second <- c(x_all, "question")[2] %>% 
       rlang::sym()
     
     x_second_label <- colmap %>% 
@@ -564,33 +573,31 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
       pull(X2)
   }
   
+  # If response column is not present, add it with value as question string | Replace question with difference
+  cols_response <- c(response = y_label)
+  
+  .answer <- .answer %>% 
+    tibble::add_column(!!!cols_response[!names(cols_response) %in% names(.)]) %>% 
+    mutate(question = trimws(gsub("^.*\\|:", "", .$question)))
+
   n_size <- .answer %>%
-    # filter(if (len >= 1) group != "Overall" else T) %>% 
+    filter(if (len >= 1) group != "Overall" else T) %>% 
     dplyr::group_by(group, question) %>% 
     dplyr::summarise(n = sum(N)) %>% 
     mutate(n = paste0("(n = ", scales::comma(n, accuracy = 1), ")"))
   
-  cols_response <- c(response = y_label)
-  
-  # If response column is not present, add it with value as question string | Replace question with difference
-  .answer 
-  
-  a <- .answer %>% 
-    tibble::add_column(!!!cols_response[!names(cols_response) %in% names(.)]) %>% 
-    mutate(question = stringr::str_replace(question, paste0("\\", y_label), ""))
-    
-  
   .data <- .answer %>% 
-    # filter(if (len >= 1) group != "Overall" else T) %>%
-    select(group, response, value, value_low, value_upp) %>%
+    filter(if (len >= 1) group != "Overall" else T) %>%
+    select(group, question, response, value, value_low, value_upp) %>%
     dplyr::mutate(value = as.numeric(gsub("%", "", value)),
                   value_low = as.numeric(gsub("%", "", value_low)),
                   value_upp = as.numeric(gsub("%", "", value_upp))) %>%
-    left_join(n_size, by = "group")
+    left_join(n_size, by = c("group", "question")) %>% 
+    filter(ifelse(is.na(eval(parse(text=y_condition))), F, eval(parse(text=y_condition))))
   
-  num_x_labels <- nrow(.data)/length(unique(.answer$response))
+  num_x_labels <- nrow(.data)/length(unique(.data$response))
   
-  if (len > 0){
+  if (len >= 2){
     .data <- .data %>% 
       tidyr::separate(group, x_all, sep = "\\|")
   }
@@ -608,14 +615,11 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
   
   ang <- ifelse(num_x_labels > 15, 90, 0) 
   
-  .data <- .data %>% 
-    filter(ifelse(is.na(eval(parse(text=y_condition))), F, eval(parse(text=y_condition))))
-  
   # ASSIGN X AXIS
-  if (len == 0){
+  if (len == 1){
     p <- .data %>%
       ggplot2::ggplot(ggplot2::aes(x = group, y=value, fill = response))
-  } else if (len >= 1){
+  } else if (len >= 2){
     p <- .data %>%
       ggplot2::ggplot(ggplot2::aes(x=!!x_top, y=value, fill = response))
   }
