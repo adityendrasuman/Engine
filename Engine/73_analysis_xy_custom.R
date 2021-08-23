@@ -30,7 +30,6 @@ glue::glue("===================== Running '73_analyse_xy_custom.R' =============
 glue::glue("This analyses given y agianst one or more x variables, with custom filters") %>% f_log_string(g_file_log)
 
 #====================================================
-
 question_creator <- function(card){
   
   df <- card
@@ -211,10 +210,10 @@ if (length(to_delete) > 0) {
 # Remove blank X AND FILTER variables
 data <- data %>% 
   filter(!(Var.type %in% c("[X]", "FILTER") & (is.na(Variable))))
-  
+
 graph <- list()
-pb <- txtProgressBar(min = min(data$X1), max = max(data$X1), style = 3, width = 40)
-  
+pb <- txtProgressBar(min = min(data$X1), max = max(max(data$X1), min(data$X1) + 1), style = 3, width = 40)
+
 for (q_no in unique(data$X1)){
   
   each_card <- data %>% 

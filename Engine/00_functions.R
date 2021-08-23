@@ -514,21 +514,19 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
       stringr::str_replace_all("==", "=") %>% 
       trimws()
     
-    condition <- condition %>% 
-      f_pad_lines(max_caption_lines - 2)
-    
     y_condition2 <- y_condition %>%
       stringr::str_replace_all("//T //& ", "") %>% 
       stringr::str_replace_all('"T"', "Everyone") %>% 
       stringr::str_replace_all("&", "\nAND,") %>% 
       stringr::str_replace_all("%in%", "in") %>% 
       stringr::str_replace_all("==", "=") %>% 
-      trimws()
+      trimws() %>% 
+      f_pad_lines(max_caption_lines - 2)
     
     condition <- glue::glue("RESPONDENT POOL:\n------------------------\n{condition}\n------------------------\nSHOW ONLY: {y_condition2}")
   }
   
-  len <- length(c(x_all, "question"))
+  len <- length(c("question", x_all))
   
   if (len == 0){
     x_top <- "group" %>% 
@@ -538,16 +536,14 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
   }
   
   if (len >= 1){
-    x_top <- c(x_all, "question")[1] %>% 
+    x_top <- c("question", x_all)[1] %>% 
       rlang::sym()
     
-    x_top_label <- colmap %>% 
-      filter(X1 == x_top) %>% 
-      pull(X2)
+    x_top_label <- y_label
   }
   
   if (len >= 2){
-    x_second <- c(x_all, "question")[2] %>% 
+    x_second <- c("question", x_all)[2] %>% 
       rlang::sym()
     
     x_second_label <- colmap %>% 
@@ -642,25 +638,21 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
   # ASSIGN FACET GRIDS
   if (len == 2){
     p <- p + ggplot2::facet_grid(as.formula(paste0(". ~ ", x_second)), 
-                                 labeller = label_wrap_gen(width = width_facet_label, multi_line = TRUE),
-                                 drop = T,
-                                 scale = "free_x")
+                                labeller = label_wrap_gen(width = width_facet_label, multi_line = TRUE),
+                                drop = T,
+                                scale = "free_x")
     
   } else if (len == 3) {
-    p <- p + ggplot2::facet_grid(as.formula(
-      paste0(".", " ~ ", x_second, " + ", x_last)
-    ), 
-    labeller = label_wrap_gen(width = width_facet_label, multi_line = TRUE),
-    drop = T,
-    scale = "free_x")
+    p <- p + ggplot2::facet_grid(as.formula(paste0(".", " ~ ", x_second, " + ", x_last)), 
+                                labeller = label_wrap_gen(width = width_facet_label, multi_line = TRUE),
+                                drop = T,
+                                scale = "free_x")
     
   }  else if (len >= 4) {
-    p <- p + ggplot2::facet_grid(as.formula(
-      paste0(".", " ~ ", x_second, " + ", paste(x_subsequent, collapse = " + "), " + ", x_last)
-    ), 
-    labeller = label_wrap_gen(width = width_facet_label, multi_line = TRUE),
-    drop = T,
-    scale = "free_x")
+    p <- p + ggplot2::facet_grid(as.formula(paste0(".", " ~ ", x_second, " + ", paste(x_subsequent, collapse = " + "), " + ", x_last)), 
+                                labeller = label_wrap_gen(width = width_facet_label, multi_line = TRUE),
+                                drop = T,
+                                scale = "free_x")
   }
   
   # CREATE FINAL GRAPH
