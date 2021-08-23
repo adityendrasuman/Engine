@@ -483,16 +483,19 @@ f_graph_1 <- function(.answer, x_all, x_label = "", y_label = "", condition = ""
   return(p)
 }
 
-f_graph_2 <- function(.answer, y, x_all, y_condition = "T", condition = "", numeric_y, colmap){
+f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric_y, colmap){
   
   #.answer, x_all, x_label = "", y_label = "", condition = "", numeric_y
   
   options(dplyr.summarise.inform = FALSE)
   
-  y_label <- colmap %>% 
-    filter(X1 == y) %>% 
-    pull(X2)
-  
+  y_label <- .answer %>%
+    pull(question) %>% 
+    unique() %>% 
+    strsplit(" ") %>% 
+    Reduce(intersect, .) %>% 
+    paste(collapse = " ")
+    
   width_x_label = 10
   width_facet_label = 20
   font_value_label = 8

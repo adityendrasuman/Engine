@@ -347,8 +347,7 @@ for (q_no in unique(data$X1)){
   }
   
   graph[[q_no]] <- answer %>% 
-    f_graph_2(y = q[[2]],
-              x_all = c(q[[4]], "question"), 
+    f_graph_2(x_all = c(q[[4]], "question"), 
               y_condition = y_condition, 
               condition = q[[3]], 
               numeric_y = numeric_y, 
