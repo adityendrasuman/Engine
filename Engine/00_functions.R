@@ -487,15 +487,6 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
   
   options(dplyr.summarise.inform = FALSE)
   
-  y_label <- .answer %>%
-    pull(question) %>% 
-    unique() %>% 
-    gsub("\\|:.*$", "", .) %>% 
-    trimws() %>% 
-    unique()
-  
-  y_label <- y_label[1]
-    
   width_x_label = 10
   width_facet_label = 20
   font_value_label = 8
@@ -514,19 +505,46 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
       stringr::str_replace_all("==", "=") %>% 
       trimws()
     
+    if (condition == "T") {condition <- "Everyone"}
+    
     y_condition2 <- y_condition %>%
       stringr::str_replace_all("//T //& ", "") %>% 
       stringr::str_replace_all('"T"', "Everyone") %>% 
       stringr::str_replace_all("&", "\nAND,") %>% 
       stringr::str_replace_all("%in%", "in") %>% 
       stringr::str_replace_all("==", "=") %>% 
-      trimws() %>% 
+      trimws()
+    
+    if (y_condition2 == "T") {y_condition2 <- "All responses"}
+    
+    y_condition2 <- y_condition2 %>%  
       f_pad_lines(max_caption_lines - 2)
     
-    condition <- glue::glue("RESPONDENT POOL:\n------------------------\n{condition}\n------------------------\nSHOW ONLY: {y_condition2}")
+    condition <- glue::glue("------------------------\nRESPONDENT POOL: {condition}\n------------------------\nSHOW: {y_condition2}")
   }
   
-  len <- length(c("question", x_all))
+  questions <- .answer %>% 
+    pull(question) %>% 
+    unique()
+  
+  count_q <- questions %>% 
+    length()
+  
+  if (count_q > 1) {
+    y_label <- questions %>% 
+      gsub("\\|:.*$", "", .) %>% 
+      trimws() %>% 
+      unique()
+    
+    y_label <- y_label[1]
+    x_new <- c("question", x_all)
+    
+  } else {
+    y_label <- questions[1]
+    x_new <- x_all
+  }
+  
+  len <- length(x_new)
   
   if (len == 0){
     x_top <- "group" %>% 
@@ -536,14 +554,20 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
   }
   
   if (len >= 1){
-    x_top <- c("question", x_all)[1] %>% 
+    x_top <- x_new[1] %>% 
       rlang::sym()
     
-    x_top_label <- y_label
+    if (count_q > 1) {
+      x_top_label <- y_label
+    } else {
+      x_top_label <- colmap %>% 
+        filter(X1 == x_top) %>% 
+        pull(X2)
+    }
   }
   
   if (len >= 2){
-    x_second <- c("question", x_all)[2] %>% 
+    x_second <- x_new[2] %>% 
       rlang::sym()
     
     x_second_label <- colmap %>% 
@@ -552,7 +576,7 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
   }
   
   if (len >= 3){
-    x_last <- x_all[len] %>% 
+    x_last <- x_new[len] %>% 
       rlang::sym()
     
     x_last_label <- colmap %>% 
@@ -561,7 +585,7 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
   }
   
   if (len >= 4){
-    x_subsequent <- x_all[3:len - 1] %>% 
+    x_subsequent <- x_new[3:len - 1] %>% 
       rlang::syms()
     
     x_subsequent_label <- colmap %>% 
@@ -593,11 +617,18 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
   
   num_x_labels <- nrow(.data)/length(unique(.data$response))
   
-  if (len >= 2){
-    .data <- .data %>% 
-      tidyr::separate(group, x_all, sep = "\\|")
+  if (count_q > 1){
+    if (len >= 2){
+      .data <- .data %>% 
+        tidyr::separate(group, x_all, sep = "\\|")
+    }
+  } else {
+    if (len >= 1){
+      .data <- .data %>% 
+        tidyr::separate(group, x_all, sep = "\\|")
+    }
   }
-  
+
   if (numeric_y == T){
     .data <- .data %>% 
       dplyr::arrange(desc(value))
@@ -612,12 +643,22 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
   ang <- ifelse(num_x_labels > 15, 90, 0) 
   
   # ASSIGN X AXIS
-  if (len == 1){
-    p <- .data %>%
-      ggplot2::ggplot(ggplot2::aes(x = group, y=value, fill = response))
-  } else if (len >= 2){
-    p <- .data %>%
-      ggplot2::ggplot(ggplot2::aes(x=!!x_top, y=value, fill = response))
+  if (count_q > 1){
+    if (len == 1){
+      p <- .data %>%
+        ggplot2::ggplot(ggplot2::aes(x = group, y=value, fill = response))
+    } else if (len >= 2){
+      p <- .data %>%
+        ggplot2::ggplot(ggplot2::aes(x=!!x_top, y=value, fill = response))
+    }
+  } else {
+    if (len == 0){
+      p <- .data %>%
+        ggplot2::ggplot(ggplot2::aes(x = group, y=value, fill = response))
+    } else if (len >= 1){
+      p <- .data %>%
+        ggplot2::ggplot(ggplot2::aes(x=!!x_top, y=value, fill = response))
+    }
   }
   
   # ASSIGN AXIS LABELS

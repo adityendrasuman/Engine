@@ -244,49 +244,54 @@ for (q_no in unique(data$X1)){
   
   num_show <- length(show_vector)
   
-  show_is_string <- show_vector %>% 
-    as.numeric() %>% 
-    is.na() %>%
-    suppressWarnings() %>% 
-    sum()
-  
-  if (num_show > 1){
-    if (show_is_string > 0){
-      
-      # if more than one response in string format, create c("a", "b", "c")
-      str <- paste(show_vector, collapse = '", "')
-      show_string <- glue::glue('c("{str}")') 
-    } else {
-      
-      # if more than one response in numeric format, create c(1, 3, 5, 9) 
-      str <- paste(show_vector, collapse = ', ')
-      show_string <- glue::glue('c({str})')
-    }
-  } else {
+  if (num_show >0){
+    show_is_string <- show_vector %>% 
+      as.numeric() %>% 
+      is.na() %>%
+      suppressWarnings() %>% 
+      sum()
     
-    # if a single response ...
-    if (sign == "not in") {sign == "!="}
-    if (sign == "in") {sign == "=="}
-    if (show_is_string > 0){
-      
-      # ... in string format, create "a"
-      str <- show_vector[1]
-      show_string <- glue::glue('"{str}"')
+    if (num_show > 1){
+      if (show_is_string > 0){
+        
+        # if more than one response in string format, create c("a", "b", "c")
+        str <- paste(show_vector, collapse = '", "')
+        show_string <- glue::glue('c("{str}")') 
+      } else {
+        
+        # if more than one response in numeric format, create c(1, 3, 5, 9) 
+        str <- paste(show_vector, collapse = ', ')
+        show_string <- glue::glue('c({str})')
+      }
     } else {
       
-      # ... in numeric format, create 1
-      str <- show_vector[1]
-      show_string <- glue::glue('{str}')
+      # if a single response ...
+      if (sign == "not in") {sign == "!="}
+      if (sign == "in") {sign == "=="}
+      if (show_is_string > 0){
+        
+        # ... in string format, create "a"
+        str <- show_vector[1]
+        show_string <- glue::glue('"{str}"')
+      } else {
+        
+        # ... in numeric format, create 1
+        str <- show_vector[1]
+        show_string <- glue::glue('{str}')
+      }
     }
+    
+    if (sign == "not in") {
+      y_condition <- glue::glue("!(response %in% {show_string})")
+    } else if(sign == "in") {
+      y_condition <- glue::glue("response %in% {show_string}")
+    } else {
+      y_condition <- glue::glue("response {sign} {show_string}")
+    }
+  } else {
+    y_condition <- "T"
   }
   
-  if (sign == "not in") {
-    y_condition <- glue::glue("!(response %in% {show_string})")
-  } else if(sign == "in") {
-    y_condition <- glue::glue("response %in% {show_string}")
-  } else {
-    y_condition <- glue::glue("response {sign} {show_string}")
-  }
   
   each_card <- each_card %>% 
     select(-all_matching_y, -stack_chart, -show_condition_sign, -show_condition_value)
