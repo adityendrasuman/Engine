@@ -151,7 +151,8 @@ for (q_no in question_numbers) {
     }
   }
   
-  multiple_q = ifelse(substr(q_no,(nchar(q_no)+1)-1,nchar(q_no))=="_", T, F)
+  # multiple_q = ifelse(substr(q_no,(nchar(q_no)+1)-1,nchar(q_no))=="_", T, F)
+  multiple_q = T
   
   apply_condn_on_data <- d_02 %>% 
     mutate(

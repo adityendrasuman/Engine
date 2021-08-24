@@ -155,7 +155,17 @@ question_creator <- function(card){
   return(question)
 }
 
-if (args[2] == "all"){
+if (args[2] == "section"){
+  data <- f_read_xl(g_file_path, namedRegion = "xy_custom_all_temp", colNames = T, rowNames = F)
+  section <- args[3]
+  row_start <- which(data$X1 == paste0("SECTION ", stringr::str_pad(section, 2, pad = "0"), ": "))
+  row_end <- which(data$X1 == paste0("SECTION ", stringr::str_pad(as.numeric(section) + 1, 2, pad = "0"), ": "))
+  if (length(row_end) == 0) {row_end <- nrow(data) + 1}
+  
+  data <- data %>% 
+    slice(row_start:row_end - 1)
+  
+} else if (args[2] == "all"){
   data <- f_read_xl(g_file_path, namedRegion = "xy_custom_all_temp", colNames = T, rowNames = F)
 } else {
   json_str <- gsub("~", '"', args[2]) 
