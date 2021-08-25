@@ -79,7 +79,7 @@ questions <- map %>%
   pull(check_var) %>% 
   unique()
 
-glue::glue("Columns analysed ...")
+glue::glue("Analysing each column ...")
 pb <- txtProgressBar(min = 0, max = length(questions), style = 3, width = 40)
 k <- 0
 
