@@ -5,6 +5,7 @@ start_time <- Sys.time()
 
 # capture variable coming from vba ----
 args <- commandArgs(trailingOnly=T)
+args <- c("C:|Users|User|Dropbox (Dalberg)|State of Aadhaar Initiative|SoA 2021 - Identifying supply side improvements of PDS and MNREGS|3. Workspace|Aditya|interface history|", "z_sl_num")
 
 # set working director ---- 
 setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
@@ -31,22 +32,15 @@ map <- f_read_xl(g_file_path, namedRegion = "body_skip", colNames = F)
 
 map <- map %>% 
   unique() %>% 
-  select(check_var = X1,
+  select(check_var_regex = X1,
          condition_var = X2,
          sign	= X3,
          response = X4,
-         next_condition = X5) %>% 
-  mutate(
-    check_var_name = case_when(
-      substr(check_var, 1, 4) == "All_" ~ ".+",
-      T ~ check_var),
-    next_condition = ifelse(is.na(next_condition), "", next_condition)
-  )
+         next_condition = X5)
 
-# Figure out all the question numbers to apply the check on
-question_numbers <- map %>% 
-  pull(check_var) %>% 
-  unique()
+# Regex-question mapping
+regex_q_mapping <- data.frame(matrix(ncol=2, nrow=0))
+colnames(regex_q_mapping) <- c("check_var_regex", "check_var")
 
 # Overall Summary for export ...
 skip_logic_log <- data.frame(matrix(ncol=8, nrow=0))
@@ -59,161 +53,202 @@ colnames(skip_logic_log) <- c("var_to_be_checked", "total_rows", "num_values",
 d_skip <- data.frame(matrix(ncol=2, nrow=0))
 colnames(d_skip) <- c("q_no", "condition")
 
+# Figure out all the regex strings to apply the check on
+questions_regex <- map %>% 
+  pull(check_var_regex) %>% 
+  unique()
+
+for (q_regex in questions_regex) {
+  
+  regex_q_mapping <- d_02 %>% 
+    select(matches(q_regex)) %>% 
+    colnames() %>% 
+    as.data.frame() %>% 
+    select(check_var = 1) %>% 
+    mutate(check_var_regex = q_regex) %>% 
+    select(check_var_regex, check_var) %>% 
+    rbind(regex_q_mapping)
+}
+
+# Add question number to the skip logic map
+map <- map %>% 
+  left_join(regex_q_mapping, by =c("check_var_regex"))
+  
+# Figure out all the question numbers strings to apply the check on
+questions <- map %>% 
+  pull(check_var) %>% 
+  unique()
+
+glue::glue("Columns analysed ...")
+pb <- txtProgressBar(min = 0, max = length(questions), style = 3, width = 40)
+k <- 0
+
 # For each such question number ...
-for (q_no in question_numbers) {
+for (q_no in questions) {
+  
   # filter the skip logic table for rows that contain condition variable
   skip_filtered_for_q <- map %>% 
     filter(check_var == q_no)
   
-  # number of condition variables
-  num_conditions <- skip_filtered_for_q %>% 
-    nrow()
+  # Apply brackets for each block
+  blocks <- skip_filtered_for_q %>% 
+    pull(check_var_regex) %>% 
+    unique() 
   
-  # initialise condition text
-  condition <- ""
+  condition_overall <- ""
   
-  # for each condition ...
-  for (i in 1:num_conditions){
+  for (each_block in blocks){
     
-    # get variable on which to apply the check 
-    q <- skip_filtered_for_q[i, "check_var_name"]
+    # Skip filtered for block
+    skip_filtered_for_block <- skip_filtered_for_q %>% 
+      filter(check_var_regex == each_block)
     
-    # get condition variable 
-    var <- skip_filtered_for_q[i, "condition_var"]
+    # number of condition variables
+    num_conditions <- skip_filtered_for_block %>% 
+      nrow()
     
-    if (!is.na(var)){
+    # initialise condition text
+    condition <- ""
+  
+    # for each condition ...
+    for (i in 1:num_conditions){
+    
+      # get variable on which to apply the check 
+      q <- skip_filtered_for_block[i, "check_var"]
       
-      # get relation between condition variable and the values
-      sign <- skip_filtered_for_q[i, "sign"]
+      # get condition variable 
+      var <- skip_filtered_for_block[i, "condition_var"]
       
-      # get all allowed values of condition variable, i.e. response vector
-      response_vector <- skip_filtered_for_q[i, "response"] %>% 
-        strsplit(split = "\\|") %>% 
-        gdata::trim() %>% 
-        unlist()
+      if (!is.na(var)){
       
-      # calculate size of this response vector
-      num_response <- length(response_vector)
-      
-      # check if response vector is numeric or charecter
-      response_is_string <- response_vector %>% 
-        as.numeric() %>% 
-        is.na() %>%
-        suppressWarnings() %>% 
-        sum()
-      
-      if (num_response > 1){
-        if (response_is_string > 0){
-          
-          # if more than one response in string format, create c("a", "b", "c")
-          str <- paste(response_vector, collapse = '", "')
-          response_string <- glue::glue('c("{str}")') 
+        # get relation between condition variable and the values
+        sign <- skip_filtered_for_block[i, "sign"]
+        
+        # get all allowed values of condition variable, i.e. response vector
+        response_vector <- skip_filtered_for_block[i, "response"] %>% 
+          strsplit(split = "\\|") %>% 
+          gdata::trim() %>% 
+          unlist()
+        
+        # calculate size of this response vector
+        num_response <- length(response_vector)
+        
+        # check if response vector is numeric or charecter
+        response_is_string <- response_vector %>% 
+          as.numeric() %>% 
+          is.na() %>%
+          suppressWarnings() %>% 
+          sum()
+        
+        if (num_response > 1){
+          if (response_is_string > 0){
+            
+            # if more than one response in string format, create c("a", "b", "c")
+            str <- paste(response_vector, collapse = '", "')
+            response_string <- glue::glue('c("{str}")') 
+          } else {
+            
+            # if more than one response in numeric format, create c(1, 3, 5, 9) 
+            str <- paste(response_vector, collapse = ', ')
+            response_string <- glue::glue('c({str})')
+          }
         } else {
           
-          # if more than one response in numeric format, create c(1, 3, 5, 9) 
-          str <- paste(response_vector, collapse = ', ')
-          response_string <- glue::glue('c({str})')
+          # if a single response ...
+          if (sign == "not in") {sign == "!="}
+          if (sign == "in") {sign == "=="}
+          if (response_is_string > 0){
+            
+            # ... in string format, create "a"
+            str <- response_vector[1]
+            response_string <- glue::glue('"{str}"')
+          } else {
+            
+            # ... in numeric format, create 1
+            str <- response_vector[1]
+            response_string <- glue::glue('{str}')
+          }
+        }
+      }
+    
+      # get the & / | info before connecting the next condition 
+      next_condition <- skip_filtered_for_block[i, "next_condition"] %>% 
+        stringr::str_trim()
+      
+      if (is.na(next_condition)) {next_condition <- ""}
+      
+      # apend to previous condition and make it redy to append the condition string using the "next condition" string
+      if (!is.na(var)){
+        if (sign == "not in") {
+          condition <- glue::glue("{condition} !({var} %in% {response_string}) {next_condition}")
+        } else if(sign == "in") {
+          condition <- glue::glue("{condition} {var} %in% {response_string} {next_condition}")
+        } else {
+          condition <- glue::glue("{condition} {var} {sign} {response_string} {next_condition}")
         }
       } else {
-        
-        # if a single response ...
-        if (sign == "not in") {sign == "!="}
-        if (sign == "in") {sign == "=="}
-        if (response_is_string > 0){
-          
-          # ... in string format, create "a"
-          str <- response_vector[1]
-          response_string <- glue::glue('"{str}"')
-        } else {
-          
-          # ... in numeric format, create 1
-          str <- response_vector[1]
-          response_string <- glue::glue('{str}')
-        }
+        condition <- glue::glue("{condition} {next_condition}")
       }
     }
     
-    # get the & / | info before connecting the next condition 
-    next_condition <- skip_filtered_for_q[i, "next_condition"] %>% 
-      stringr::str_trim()
+    condition <- condition %>% 
+      gdata::trim()
     
-    # apend to previous condition and make it redy to append the condition string using the "next condition" string
-    if (!is.na(var)){
-      if (sign == "not in") {
-        condition <- glue::glue("{condition} !({var} %in% {response_string}) {next_condition}")
-      } else if(sign == "in") {
-        condition <- glue::glue("{condition} {var} %in% {response_string} {next_condition}")
-      } else {
-        condition <- glue::glue("{condition} {var} {sign} {response_string} {next_condition}")
-      }
+    if (condition_overall == ""){
+      condition_overall <- glue::glue("({condition})")
     } else {
-      condition <- glue::glue("{condition} {next_condition}")
+      condition_overall <- glue::glue("{condition_overall} & ({condition})")
     }
   }
-  
-  # multiple_q = ifelse(substr(q_no,(nchar(q_no)+1)-1,nchar(q_no))=="_", T, F)
+
   multiple_q = T
   
   apply_condn_on_data <- d_02 %>% 
     mutate(
-      value = ifelse(is.na(eval(parse(text=condition))), F, eval(parse(text=condition))),
-      condition = ifelse(value, "met", "un-met")
+      xx_value = ifelse(is.na(eval(parse(text=condition_overall))), F, eval(parse(text=condition_overall))),
+      xx_condition = ifelse(xx_value, "met", "un-met"),
+      xx_response = case_when(
+        is.na(!!rlang::sym(q_no)) ~ "blank",
+        !!rlang::sym(q_no) == "" ~ "blank",
+        T ~ "value"
+      )
     )
-  
-  if (multiple_q == T){
-    list_of_q <- apply_condn_on_data %>% 
-      select(matches(q)) %>%
-      colnames()
-  } else {
-    list_of_q <- apply_condn_on_data %>% 
-      select(all_of(q)) %>%
-      colnames()
-  }
-  
-  dataframe_of_q <- list_of_q %>%
-    as.data.frame() %>%
-    select("q_no" = 1)
-  
-  apply_condn_on_data <- apply_condn_on_data %>% 
-    mutate(response = ifelse(rowSums(select(apply_condn_on_data, all_of(list_of_q)) != "", na.rm=T) == 0, 
-                             "blank", "value"))
   
   # calculate data points for question
   row_count <- apply_condn_on_data %>% 
     nrow()
   
   value_count <- apply_condn_on_data %>% 
-    filter(response == "value") %>% 
+    filter(xx_response == "value") %>% 
     nrow()
   
   met_count <- apply_condn_on_data %>% 
-    filter(condition == "met") %>% 
+    filter(xx_condition == "met") %>% 
     nrow()
   
   error_count <- apply_condn_on_data %>% 
-    filter((response == "blank" & condition == "met") |
-             (response == "value" & condition == "un-met")) %>% 
+    filter((xx_response == "blank" & xx_condition == "met") |
+             (xx_response == "value" & xx_condition == "un-met")) %>% 
     nrow()
   
   value_when_cond_unmet <- apply_condn_on_data %>% 
-    filter(response == "value" & condition == "un-met") %>% 
+    filter(xx_response == "value" & xx_condition == "un-met") %>% 
     nrow()
   
   blank_when_cond_met <- apply_condn_on_data %>% 
-    filter(response == "blank" & condition == "met") %>% 
+    filter(xx_response == "blank" & xx_condition == "met") %>% 
     nrow()
   
   if (error_count > 0) {
     error_id <- apply_condn_on_data %>% 
-      filter((response == "blank" & condition == "met") |
-               (response == "value" & condition == "un-met")) %>% 
+      filter((xx_response == "blank" & xx_condition == "met") |
+               (xx_response == "value" & xx_condition == "un-met")) %>% 
       select(args[2]) %>% 
       as.list() %>%
       paste(collapse=" | ")
   } else {
     error_id <- ""
   }
-  
   
   skip_logic_log2 <- data.frame(var_to_be_checked = q_no, 
                                total_rows = row_count, 
@@ -222,15 +257,19 @@ for (q_no in question_numbers) {
                                num_violations = error_count,
                                value_when_condition_unmet = value_when_cond_unmet,
                                blank_when_condition_met = blank_when_cond_met,
-                               condition = condition,
+                               condition = condition_overall,
                                error_id = error_id) 
   
   skip_logic_log <- skip_logic_log %>% 
     rbind(skip_logic_log2)
   
-  d_skip <- dataframe_of_q %>% 
-    mutate(condition = condition) %>%
+  d_skip <- data.frame(q_no = q_no,
+                       condition = condition_overall) %>%
     rbind(d_skip)
+  
+  k = k + 1
+  
+  setTxtProgressBar(pb, k)
 }
 
 skip_logic_log %>%
@@ -241,6 +280,15 @@ skip_logic_log %>%
          blank_when_condition_met,
          error_id) %>%
   write.table(file = file.path("temp.csv"), sep=",", col.names = F, row.names = F)
+
+skip_logic_log %>%
+  select(var_to_be_checked, 
+         num_values,
+         num_violations,
+         value_when_condition_unmet,
+         blank_when_condition_met,
+         error_id) %>%
+  write.table(file = file.path("skip_logic_error_log.csv"), sep=",", col.names = T, row.names = F)
 
 #====================================================
 
