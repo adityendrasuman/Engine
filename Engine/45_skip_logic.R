@@ -5,7 +5,6 @@ start_time <- Sys.time()
 
 # capture variable coming from vba ----
 args <- commandArgs(trailingOnly=T)
-args <- c("C:|Users|User|Dropbox (Dalberg)|State of Aadhaar Initiative|SoA 2021 - Identifying supply side improvements of PDS and MNREGS|3. Workspace|Aditya|interface history|", "z_sl_num")
 
 # set working director ---- 
 setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
