@@ -286,7 +286,8 @@ skip_logic_log %>%
          num_violations,
          value_when_condition_unmet,
          blank_when_condition_met,
-         error_id) %>%
+         error_id,
+         condition) %>%
   write.table(file = file.path("skip_logic_error_log.csv"), sep=",", col.names = T, row.names = F)
 
 #====================================================
