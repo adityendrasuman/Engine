@@ -73,7 +73,7 @@ question_creator <- function(card){
     filter(q_no == y) %>% 
     pull(condition)
   
-  condition <- ifelse(is_empty(condition), "T", glue::glue("({trimws(condition)})"))
+  condition <- ifelse(rlang::is_empty(condition), "T", glue::glue("({trimws(condition)})"))
     
   # for each condition ...
   if (num_conditions > 0){
@@ -217,6 +217,7 @@ if (length(to_delete) > 0) {
     filter(X1 != to_delete)
 }
 
+
 # Remove blank X AND FILTER variables
 data <- data %>% 
   filter(!(Var.type %in% c("[X]", "FILTER") & (is.na(Variable))))
@@ -240,6 +241,11 @@ for (q_no in unique(data$X1)){
     is.na()
   
   # Figure out what to show
+  num_show <- each_card %>% 
+    filter(Var.type == "SHOW") %>% 
+    nrow()
+  
+  if (num_show >0){
   
   sign <- each_card %>% 
     filter(Var.type == "SHOW") %>% 
@@ -251,10 +257,7 @@ for (q_no in unique(data$X1)){
     strsplit(split = "\\|") %>% 
     gdata::trim() %>% 
     unlist()
-  
-  num_show <- length(show_vector)
-  
-  if (num_show >0){
+ 
     show_is_string <- show_vector %>% 
       as.numeric() %>% 
       is.na() %>%
