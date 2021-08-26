@@ -7,6 +7,7 @@ start_time <- Sys.time()
 
 # capture variable coming from vba ----
 args <- commandArgs(trailingOnly=T)
+args <- c("C:|Users|User|Dropbox (Dalberg)|State of Aadhaar Initiative|SoA 2021 - Identifying supply side improvements of PDS and MNREGS|11. Data & analysis|PDS Tool|interface history|", "[{~X1~:~8~,~Run~:~~,~Var type~:~[Y]~,~Variable~:~^S_Q206_[0-9]+$~,~Description~:~All Column Names That Match --^S_Q206_[0-9]+$--.~,~X6~:~~,~Notes~:~~,~Flag~:~?~,~Flag_For~:~All matching Y~},{~X1~:~~,~Run~:~~,~Var type~:~~,~Variable~:~~,~Description~:~~,~X6~:~~,~Notes~:~~,~Flag~:~~,~Flag_For~:~Stack chart~},{~X1~:~~,~Run~:~~,~Var type~:~[X]~,~Variable~:~S_UrbanRural~,~Description~:~Please Select~,~X6~:~~,~Notes~:~~,~Flag~:~~,~Flag_For~:~~},{~X1~:~~,~Run~:~~,~Var type~:~~,~Variable~:~~,~Description~:~~,~X6~:~~,~Notes~:~~,~Flag~:~~,~Flag_For~:~~},{~X1~:~~,~Run~:~~,~Var type~:~SHOW~,~Variable~:~~,~Description~:~~,~X6~:~~,~Notes~:~~,~Flag~:~~,~Flag_For~:~~},{~X1~:~~,~Run~:~~,~Var type~:~~,~Variable~:~~,~Description~:~in~,~X6~:~True | Mentioned | Yes~,~Notes~:~~,~Flag~:~~,~Flag_For~:~~},{~X1~:~~,~Run~:~~,~Var type~:~SUMMARISER~,~Variable~:~S5~,~Description~:~ (Created)~,~X6~:~~,~Notes~:~~,~Flag~:~~,~Flag_For~:~~},{~X1~:~~,~Run~:~~,~Var type~:~~,~Variable~:~~,~Description~:~~,~X6~:~~,~Notes~:~~,~Flag~:~~,~Flag_For~:~~}]")
 
 # set working director ----
 setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
@@ -241,28 +242,30 @@ for (q_no in unique(data$X1)){
     is.na()
   
   # Figure out what to show
-  num_show <- each_card %>% 
+  num_show1 <- each_card %>% 
     filter(Var.type == "SHOW") %>% 
     nrow()
   
-  if (num_show >0){
+  if (num_show1 >0){
   
-  sign <- each_card %>% 
-    filter(Var.type == "SHOW") %>% 
-    pull(show_condition_sign)
-  
-  show_vector <- each_card %>%
-    filter(Var.type == "SHOW") %>% 
-    pull(show_condition_value) %>% 
-    strsplit(split = "\\|") %>% 
-    gdata::trim() %>% 
-    unlist()
+    sign <- each_card %>% 
+      filter(Var.type == "SHOW") %>% 
+      pull(show_condition_sign)
+    
+    show_vector <- each_card %>%
+      filter(Var.type == "SHOW") %>% 
+      pull(show_condition_value) %>% 
+      strsplit(split = "\\|") %>% 
+      gdata::trim() %>% 
+      unlist()
  
     show_is_string <- show_vector %>% 
       as.numeric() %>% 
       is.na() %>%
       suppressWarnings() %>% 
       sum()
+    
+    num_show <- length(show_vector)
     
     if (num_show > 1){
       if (show_is_string > 0){
