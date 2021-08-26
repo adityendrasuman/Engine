@@ -375,7 +375,8 @@ for (q_no in unique(data$X1)){
               y_condition = y_condition, 
               condition = q[[3]], 
               numeric_y = numeric_y, 
-              colmap = d_colmap)
+              colmap = d_colmap,
+              cluster_chart = cluster_chart)
 
   setTxtProgressBar(pb, q_no)
 }

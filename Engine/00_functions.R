@@ -483,7 +483,13 @@ f_graph_1 <- function(.answer, x_all, x_label = "", y_label = "", condition = ""
   return(p)
 }
 
-f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric_y, colmap){
+f_graph_2 <- function(.answer, 
+                      x_all, 
+                      y_condition = "T", 
+                      condition = "", 
+                      numeric_y, 
+                      colmap,
+                      cluster_chart = T){
   
   options(dplyr.summarise.inform = FALSE)
   
@@ -699,11 +705,21 @@ f_graph_2 <- function(.answer, x_all, y_condition = "T", condition = "", numeric
   # CREATE FINAL GRAPH
   p <- p +
     ggplot2::ggtitle(toupper(y_label)) +
-    ggplot2::labs(caption = condition) +
-    ggplot2::geom_bar(position=ggplot2::position_dodge(0.95), stat="identity") + 
-    ggplot2::geom_errorbar(ggplot2::aes(ymax=value_upp, ymin=value_low), 
-                           position = ggplot2::position_dodge(0.95), 
-                           width = 0.2, size=.5, color="dark red") +
+    ggplot2::labs(caption = condition)
+  
+  if (cluster_chart == T){
+    p <- p +
+      ggplot2::geom_bar(position=ggplot2::position_dodge(0.95), stat="identity") + 
+      ggplot2::geom_errorbar(ggplot2::aes(ymax=value_upp, ymin=value_low), 
+                             position = ggplot2::position_dodge(0.95), 
+                             width = 0.2, size=.5, color="dark red")
+  
+  } else if (cluster_chart == F){
+    p <- p +
+      ggplot2::geom_bar(position=ggplot2::position_stack(0), stat="identity")
+  }
+  
+  p <- p +
     ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, 0.1))) +
     ggplot2::theme(
       axis.text.x = ggplot2::element_text(vjust = 0.5, size=font_x_label, angle = ang),
