@@ -266,12 +266,15 @@ for (q_no in unique(data$X1)){
         
         # if more than one response in string format, create c("a", "b", "c")
         str <- paste(show_vector, collapse = '", "')
-        show_string <- glue::glue('c("{str}")') 
+        show_string <- glue::glue('c("{str}")')
+        r_text <- "as.character(response)"
+        
       } else {
         
         # if more than one response in numeric format, create c(1, 3, 5, 9) 
         str <- paste(show_vector, collapse = ', ')
         show_string <- glue::glue('c({str})')
+        r_text <- "response"
       }
     } else {
       
@@ -283,20 +286,22 @@ for (q_no in unique(data$X1)){
         # ... in string format, create "a"
         str <- show_vector[1]
         show_string <- glue::glue('"{str}"')
+        r_text <- "as.character(response)"
       } else {
         
         # ... in numeric format, create 1
         str <- show_vector[1]
         show_string <- glue::glue('{str}')
-      }
+        r_text <- "response"
+      } 
     }
     
     if (sign == "not in") {
-      y_condition <- glue::glue("!(response %in% {show_string})")
+      y_condition <- glue::glue("!({r_text} %in% {show_string})")
     } else if(sign == "in") {
-      y_condition <- glue::glue("response %in% {show_string}")
+      y_condition <- glue::glue("{r_text} %in% {show_string}")
     } else {
-      y_condition <- glue::glue("response {sign} {show_string}")
+      y_condition <- glue::glue("{r_text} {sign} {show_string}")
     }
   } else {
     y_condition <- "T"
