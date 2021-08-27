@@ -764,6 +764,17 @@ f_graph_2 <- function(.answer,
   return(p)
 }
 
+f_graph_error1 <- function(q_no){
+  
+  # ASSIGN X AXIS
+  p <- ggplot2::ggplot(data.frame(), ggplot2::aes(x = "", y="", fill = "")) +
+    ggplot2::ylab(q_no) + 
+    ggplot2::xlab("ERROR") +
+    ggplot2::ggtitle(glue::glue("ERROR: At card number {q_no} of the selected card set"))
+  
+  return(p)
+}
+
 f_plotter <- function(graph, location){
   
   fn = file.path(location, 

@@ -227,158 +227,171 @@ pb <- txtProgressBar(min = min(data$X1), max = max(max(data$X1), min(data$X1) + 
 
 for (q_no in unique(data$X1)){
   
-  each_card <- data %>% 
-    filter(X1 == q_no)
-  
-  single_q <- each_card %>%
-    slice(1) %>%  
-    pull(all_matching_y) %>% 
-    is.na()
-  
-  cluster_chart <- each_card %>% 
-    slice(1) %>%  
-    pull(stack_chart) %>% 
-    is.na()
-  
-  # Figure out what to show
-  num_show1 <- each_card %>% 
-    filter(Var.type == "SHOW") %>% 
-    nrow()
-  
-  if (num_show1 >0){
-  
-    sign <- each_card %>% 
-      filter(Var.type == "SHOW") %>% 
-      pull(show_condition_sign)
-    
-    show_vector <- each_card %>%
-      filter(Var.type == "SHOW") %>% 
-      pull(show_condition_value) %>% 
-      strsplit(split = "\\|") %>% 
-      gdata::trim() %>% 
-      unlist()
- 
-    show_is_string <- show_vector %>% 
-      as.numeric() %>% 
-      is.na() %>%
-      suppressWarnings() %>% 
-      sum()
-    
-    num_show <- length(show_vector)
-    
-    if (num_show > 1){
-      if (show_is_string > 0){
+  xxx <- tryCatch(
+    {
+      each_card <- data %>% 
+        filter(X1 == q_no)
+      
+      single_q <- each_card %>%
+        slice(1) %>%  
+        pull(all_matching_y) %>% 
+        is.na()
+      
+      cluster_chart <- each_card %>% 
+        slice(1) %>%  
+        pull(stack_chart) %>% 
+        is.na()
+      
+      # Figure out what to show
+      num_show1 <- each_card %>% 
+        filter(Var.type == "SHOW") %>% 
+        nrow()
+      
+      if (num_show1 >0){
         
-        # if more than one response in string format, create c("a", "b", "c")
-        str <- paste(show_vector, collapse = '", "')
-        show_string <- glue::glue('c("{str}")')
-        r_text <- "as.character(response)"
+        sign <- each_card %>% 
+          filter(Var.type == "SHOW") %>% 
+          pull(show_condition_sign)
         
+        show_vector <- each_card %>%
+          filter(Var.type == "SHOW") %>% 
+          pull(show_condition_value) %>% 
+          strsplit(split = "\\|") %>% 
+          gdata::trim() %>% 
+          unlist()
+        
+        show_is_string <- show_vector %>% 
+          as.numeric() %>% 
+          is.na() %>%
+          suppressWarnings() %>% 
+          sum()
+        
+        num_show <- length(show_vector)
+        
+        if (num_show > 1){
+          if (show_is_string > 0){
+            
+            # if more than one response in string format, create c("a", "b", "c")
+            str <- paste(show_vector, collapse = '", "')
+            show_string <- glue::glue('c("{str}")')
+            r_text <- "as.character(response)"
+            
+          } else {
+            
+            # if more than one response in numeric format, create c(1, 3, 5, 9) 
+            str <- paste(show_vector, collapse = ', ')
+            show_string <- glue::glue('c({str})')
+            r_text <- "response"
+          }
+        } else {
+          
+          # if a single response ...
+          if (sign == "not in") {sign == "!="}
+          if (sign == "in") {sign == "=="}
+          if (show_is_string > 0){
+            
+            # ... in string format, create "a"
+            str <- show_vector[1]
+            show_string <- glue::glue('"{str}"')
+            r_text <- "as.character(response)"
+          } else {
+            
+            # ... in numeric format, create 1
+            str <- show_vector[1]
+            show_string <- glue::glue('{str}')
+            r_text <- "response"
+          } 
+        }
+        
+        if (sign == "not in") {
+          y_condition <- glue::glue("!({r_text} %in% {show_string})")
+        } else if(sign == "in") {
+          y_condition <- glue::glue("{r_text} %in% {show_string}")
+        } else {
+          y_condition <- glue::glue("{r_text} {sign} {show_string}")
+        }
       } else {
-        
-        # if more than one response in numeric format, create c(1, 3, 5, 9) 
-        str <- paste(show_vector, collapse = ', ')
-        show_string <- glue::glue('c({str})')
-        r_text <- "response"
+        y_condition <- "T"
       }
-    } else {
       
-      # if a single response ...
-      if (sign == "not in") {sign == "!="}
-      if (sign == "in") {sign == "=="}
-      if (show_is_string > 0){
+      
+      each_card <- each_card %>% 
+        select(-all_matching_y, -stack_chart, -show_condition_sign, -show_condition_value)
+      
+      # For each card create list of questions 
+      question <- list()
+      
+      if (single_q == TRUE){
         
-        # ... in string format, create "a"
-        str <- show_vector[1]
-        show_string <- glue::glue('"{str}"')
-        r_text <- "as.character(response)"
+        question[[1]] <- each_card %>% 
+          question_creator()
+        
       } else {
         
-        # ... in numeric format, create 1
-        str <- show_vector[1]
-        show_string <- glue::glue('{str}')
-        r_text <- "response"
-      } 
-    }
-    
-    if (sign == "not in") {
-      y_condition <- glue::glue("!({r_text} %in% {show_string})")
-    } else if(sign == "in") {
-      y_condition <- glue::glue("{r_text} %in% {show_string}")
-    } else {
-      y_condition <- glue::glue("{r_text} {sign} {show_string}")
-    }
-  } else {
-    y_condition <- "T"
-  }
-  
-  
-  each_card <- each_card %>% 
-    select(-all_matching_y, -stack_chart, -show_condition_sign, -show_condition_value)
-  
-  # For each card create list of questions 
-  question <- list()
-  
-  if (single_q == TRUE){
-    
-    question[[1]] <- each_card %>% 
-      question_creator()
-  
-  } else {
-    
-    all_y_key <- each_card %>%
-      filter(Var.type == "[Y]") %>% 
-      pull(Variable)
-    
-    all_y <- d_02 %>% 
-      select(matches(all_y_key)) %>% 
-      colnames()
-    
-    i = 0
-    
-    for (y in all_y){
-
-      i = i + 1
+        all_y_key <- each_card %>%
+          filter(Var.type == "[Y]") %>% 
+          pull(Variable)
+        
+        all_y <- d_02 %>% 
+          select(matches(all_y_key)) %>% 
+          colnames()
+        
+        i = 0
+        
+        for (y in all_y){
+          
+          i = i + 1
+          
+          card <- each_card %>% 
+            mutate(Variable = case_when(
+              Var.type == "[Y]" ~ y,
+              T ~ Variable
+            ))
+          
+          question[[i]] <- card %>% 
+            question_creator()
+        }
+      }
       
-      card <- each_card %>% 
-        mutate(Variable = case_when(
-          Var.type == "[Y]" ~ y,
-          T ~ Variable
-        ))
+      # For each question, create answers and rbind them
+      answer <- data.frame(matrix(ncol=9, nrow=0))
+      colnames(answer) <- c("group", "response", "N", "value", "value_se", "value_low", "value_upp", "pvalue", "sgnf")
       
-      question[[i]] <- card %>% 
-        question_creator()
+      for (q in question){
+        
+        numeric_y <- ifelse(class(d_02[[q[[2]]]]) == "numeric", T, F)
+        
+        y_label <- d_colmap %>%
+          filter(X1 == q[[2]]) %>%
+          pull(X2)
+        
+        answer <- d_02 %>% 
+          f_answer_creator(q[[1]], q[[2]], q[[3]], q[[4]]) %>% 
+          suppressWarnings() %>% 
+          mutate(question = y_label) %>% 
+          rbind(answer)
+      }
+      
+      graph[[q_no]] <- answer %>% 
+        f_graph_2(x_all = q[[4]], 
+                  y_condition = y_condition, 
+                  condition = q[[3]], 
+                  numeric_y = numeric_y, 
+                  colmap = d_colmap,
+                  cluster_chart = cluster_chart)
+      
+      setTxtProgressBar(pb, q_no)
+    },
+    
+    error = function(e){
+      message((glue::glue("ERROR: At card number {q_no} of the selected card set")))
+      q_no %>% 
+        f_graph_error1() %>% 
+        return()
     }
-  }
+  ) # END OF OUTER TRY CATCH
   
-  # For each question, create answers and rbind them
-  answer <- data.frame(matrix(ncol=9, nrow=0))
-  colnames(answer) <- c("group", "response", "N", "value", "value_se", "value_low", "value_upp", "pvalue", "sgnf")
-  
-  for (q in question){
-    
-    numeric_y <- ifelse(class(d_02[[q[[2]]]]) == "numeric", T, F)
-    
-    y_label <- d_colmap %>%
-      filter(X1 == q[[2]]) %>%
-      pull(X2)
-    
-    answer <- d_02 %>% 
-      f_answer_creator(q[[1]], q[[2]], q[[3]], q[[4]]) %>% 
-      suppressWarnings() %>% 
-      mutate(question = y_label) %>% 
-      rbind(answer)
-  }
-  
-  graph[[q_no]] <- answer %>% 
-    f_graph_2(x_all = q[[4]], 
-              y_condition = y_condition, 
-              condition = q[[3]], 
-              numeric_y = numeric_y, 
-              colmap = d_colmap,
-              cluster_chart = cluster_chart)
-
-  setTxtProgressBar(pb, q_no)
+  if (class(xxx)[1] == "gg"){graph[[q_no]] <- xxx}  
 }
 
 graph %>% 
