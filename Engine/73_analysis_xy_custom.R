@@ -391,7 +391,6 @@ for (q_no in unique(data$X1)){
     }
   ) # END OF OUTER TRY CATCH
   
-  print(class(xxx))
   if (class(xxx)[1] == "gg"){graph[[q_no]] <- xxx}  
 }
 
