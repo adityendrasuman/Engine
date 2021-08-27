@@ -163,7 +163,7 @@ if (args[2] == "section"){
   if (length(row_end) == 0) {row_end <- nrow(data) + 1}
   
   data <- data %>% 
-    slice(row_start:row_end - 1)
+    slice(row_start:(row_end - 1))
   
 } else if (args[2] == "all"){
   data <- f_read_xl(g_file_path, namedRegion = "xy_custom_all_temp", colNames = T, rowNames = F)
@@ -391,6 +391,7 @@ for (q_no in unique(data$X1)){
     }
   ) # END OF OUTER TRY CATCH
   
+  print(class(xxx))
   if (class(xxx)[1] == "gg"){graph[[q_no]] <- xxx}  
 }
 
