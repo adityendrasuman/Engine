@@ -271,6 +271,51 @@ for (q_no in questions) {
   setTxtProgressBar(pb, k)
 }
 
+# Add skip logic for additional columns created
+if (nrow(d_skip_newcol) > 0){
+  
+  skip_newcol2 <- d_skip_newcol %>%
+    mutate(old2 = stringr::str_replace_all(old, "&", "")) %>% 
+    mutate(old2 = stringr::str_replace_all(old2, "\\(", "")) %>% 
+    mutate(old2 = stringr::str_replace_all(old2, "\\)", "")) %>% 
+    mutate(old2 = stringr::str_replace_all(old2, "\\|", "")) %>% 
+    mutate(old2 = stringr::str_replace_all(old2, "\\!", "")) %>% 
+    mutate(old2 = stringr::str_replace_all(old2, "  ", " ")) 
+    
+    
+  for (row in 1:nrow(skip_newcol2)){
+    
+    y = skip_newcol2 %>% 
+      slice(row) %>% 
+      pull(new)
+    
+    x_all = skip_newcol2 %>%
+      slice(row) %>% 
+      pull(old2) %>% 
+      strsplit(" ")
+    x_all <- x_all[[1]]
+    
+    condition <- skip_newcol2[row, "old"]
+
+    for (x in x_all){
+      
+      condn <- d_skip %>% 
+        filter(q_no %in% x) %>% 
+        pull(condition) %>% 
+        paste0("(", ., ")")
+        
+      condition <- condition %>% 
+        stringr::str_replace_all(x, condn)
+    }
+    
+    d_skip <- data.frame(q_no = y, condition = condition) %>%
+      rbind(d_skip) %>% 
+      unique()
+  }
+}
+
+
+# OUTPUT LOGS
 skip_logic_log %>%
   select(var_to_be_checked, 
          num_values,
