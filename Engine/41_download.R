@@ -33,7 +33,9 @@ file.lines <- scan(file_name, what=character(), skip=start-1, sep='\n', quiet = 
 file.lines.collapsed <- paste(file.lines, collapse='\n')
 source(textConnection(file.lines.collapsed), print.eval = TRUE, echo = F)
 
-df_out <- create_new_col(d_01_D)
+d <- create_new_col(d_01_D)
+df_out <- d[[1]]
+d_skip_newcol <- d[[2]]
 
 df_out %>%
   write.table(file = file.path("temp.csv"), sep=",", col.names = T, row.names = F)
