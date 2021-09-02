@@ -398,7 +398,7 @@ for (q_no in unique(data$X1)){
     },
     
     error = function(e){
-      message((glue::glue("\nERROR: At card number {q_no} of the selected card set")))
+      message((glue::glue("\n !ERROR: At card number {q_no} of the selected card set")))
       q_no %>% 
         f_graph_error1() %>% 
         return()
