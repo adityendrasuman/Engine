@@ -775,6 +775,16 @@ f_graph_error1 <- function(q_no){
   return(p)
 }
 
+f_graph_section <- function(section_name){
+  
+  # ASSIGN X AXIS
+  p <- ggplot2::ggplot(data.frame(), ggplot2::aes()) +
+    ggplot2::ggtitle(glue::glue(section_name)) + 
+    ggplot2::theme(plot.title = element_text(size = 40, face = "bold"))
+  
+  return(p)
+}
+
 f_plotter <- function(graph, location){
   
   fn = file.path(location, 
