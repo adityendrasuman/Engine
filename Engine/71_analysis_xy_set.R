@@ -90,8 +90,22 @@ for (n_y in 1:length(all_y)){
     filter(q_no == y) %>% 
     pull(condition)
   
-  filter_y <- ifelse(is_empty(filter_y), "T", glue::glue("({trimws(filter_y)})"))
+  filter_y <- ifelse(rlang::is_empty(filter_y), "T", glue::glue("({trimws(filter_y)})"))
   
+    x_sym = character(0)
+    
+    x_label = "Overall"
+    
+    answer <- d_02 %>% 
+      f_answer_creator(s, y_sym, filter_y, x_sym) %>% 
+      suppressWarnings() 
+    
+    graph[[length(graph) + 1]] <- answer %>% 
+      f_graph_1(x_sym, x_label, y_label, filter_y, numeric_y)
+    
+    i = i + 1
+    setTxtProgressBar(pb, i)
+
   for (n_x in 1:length(all_x)){
     x_sym = all_x[[n_x]]
     
