@@ -779,8 +779,10 @@ f_graph_section <- function(section_name){
   
   # ASSIGN X AXIS
   p <- ggplot2::ggplot(data.frame(), ggplot2::aes()) +
-    ggplot2::ggtitle(glue::glue(section_name)) + 
-    ggplot2::theme(plot.title = element_text(size = 40, face = "bold"))
+    ggplot2::ggtitle(glue::glue(paste(strwrap(paste0("\n\n",section_name), width = 50), collapse = "\n"))) + 
+    ggplot2::theme(plot.title = element_text(size = 40, face = "bold")) +
+    ggplot2::theme(plot.title = element_text(hjust = 0.5)) + 
+    ggplot2::theme(panel.background = element_blank())
   
   return(p)
 }
