@@ -229,7 +229,6 @@ graph <- list()
 pb <- txtProgressBar(min = min(data$X1), max = max(max(data$X1), min(data$X1) + 1), style = 3, width = 40)
 
 card_num <- 0
-section_num <- 0
 
 for (q_no in unique(data$X1)){
 
@@ -244,8 +243,6 @@ for (q_no in unique(data$X1)){
   
   if (is_section){
     
-    section_num <- section_num + 1
-    section_name <- glue::glue("Section {section_num}: {section_name}") 
     graph[[q_no]] <- section_name %>%
       f_graph_section()
   
@@ -426,6 +423,7 @@ graph %>%
 #====================================================
 
 # Log of run ----
+glue::glue("\n") %>% f_log_string(g_file_log)
 glue::glue("finished run in {round(Sys.time() - start_time, 0)} secs") %>% f_log_string(g_file_log)
 glue::glue("\n\n") %>% f_log_string(g_file_log)
 
