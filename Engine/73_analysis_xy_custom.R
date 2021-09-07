@@ -228,24 +228,33 @@ data <- data %>%
 graph <- list()
 pb <- txtProgressBar(min = min(data$X1), max = max(max(data$X1), min(data$X1) + 1), style = 3, width = 40)
 
+card_num <- 0
+section_num <- 0
+
 for (q_no in unique(data$X1)){
+
+  each_card <- data %>% 
+    filter(X1 == q_no)
   
-  xxx <- tryCatch(
-    {
-      each_card <- data %>% 
-        filter(X1 == q_no)
-      
-      section_name <- each_card %>% 
-        slice(1) %>% 
-        pull(Var.type)
-        
-      is_section = ifelse(substr(section_name,1,7) == "SECTION", T, F)
-      
-      if (is_section){
-        graph[[q_no]] <- section_name %>% 
-          f_graph_section()
-        
-      } else {
+  section_name <- each_card %>% 
+    slice(1) %>% 
+    pull(Var.type)
+  
+  is_section = ifelse(substr(section_name,1,7) == "SECTION", T, F)
+  
+  if (is_section){
+    
+    section_num <- section_num + 1
+    section_name <- glue::glue("Section {section_num}: {section_name}") 
+    graph[[q_no]] <- section_name %>%
+      f_graph_section()
+  
+  } else {
+
+    card_num <- card_num + 1
+    
+    xxx <- tryCatch(
+      {
         single_q <- each_card %>%
           slice(1) %>%  
           pull(all_matching_y) %>% 
@@ -327,13 +336,13 @@ for (q_no in unique(data$X1)){
         } else {
           y_condition <- "T"
         }
-      
+        
         each_card <- each_card %>% 
           select(-all_matching_y, -stack_chart, -show_condition_sign, -show_condition_value)
         
         # For each card create list of questions 
         question <- list()
-      
+        
         if (single_q == TRUE){
           
           question[[1]] <- each_card %>% 
@@ -365,7 +374,7 @@ for (q_no in unique(data$X1)){
               question_creator()
           }
         }
-      
+        
         # For each question, create answers and rbind them
         answer <- data.frame(matrix(ncol=9, nrow=0))
         colnames(answer) <- c("group", "response", "N", "value", "value_se", "value_low", "value_upp", "pvalue", "sgnf")
@@ -384,7 +393,7 @@ for (q_no in unique(data$X1)){
             mutate(question = y_label) %>% 
             rbind(answer)
         }
-      
+        
         graph[[q_no]] <- answer %>% 
           f_graph_2(x_all = q[[4]],
                     y = q[[2]],
@@ -395,18 +404,20 @@ for (q_no in unique(data$X1)){
                     cluster_chart = cluster_chart)
         
         setTxtProgressBar(pb, q_no)
+      },
+      
+      error = function(e){
+        (glue::glue("\n !ERROR: At card number {card_num} of the selected card set")) %>% 
+          f_log_string(g_file_log) 
+        
+        card_num %>% 
+          f_graph_error1() %>% 
+          return()
       }
-    },
+    ) # END OF OUTER TRY CATCH
+    if (class(xxx)[1] == "gg"){graph[[q_no]] <- xxx}  
     
-    error = function(e){
-      message((glue::glue("\n !ERROR: At card number {q_no} of the selected card set")))
-      q_no %>% 
-        f_graph_error1() %>% 
-        return()
-    }
-  ) # END OF OUTER TRY CATCH
-  
-  if (class(xxx)[1] == "gg"){graph[[q_no]] <- xxx}  
+  }
 }
 
 graph %>% 
