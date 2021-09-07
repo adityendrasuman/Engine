@@ -484,7 +484,8 @@ f_graph_1 <- function(.answer, x_all, x_label = "", y_label = "", condition = ""
 }
 
 f_graph_2 <- function(.answer, 
-                      x_all, 
+                      x_all,
+                      y,
                       y_condition = "T", 
                       condition = "", 
                       numeric_y, 
@@ -600,11 +601,17 @@ f_graph_2 <- function(.answer,
   }
   
   # If response column is not present, add it with value as question string | Replace question with difference
-  cols_response <- c(response = y_label)
   
-  .answer <- .answer %>% 
-    tibble::add_column(!!!cols_response[!names(cols_response) %in% names(.)]) %>% 
-    mutate(question = trimws(gsub("^.*\\|:", "", .$question)))
+  if (numeric_y == T) {
+    cols_response <- c(response = y_label)
+    .answer <- .answer %>% 
+      select(-response) %>% 
+      tibble::add_column(!!!cols_response[!names(cols_response) %in% names(.)]) %>% 
+      mutate(question = trimws(gsub("^.*\\|:", "", .$question)))
+  } else {
+    .answer <- .answer %>% 
+      mutate(question = trimws(gsub("^.*\\|:", "", .$question)))
+  }
 
   n_size <- .answer %>%
     filter(if (len >= 1) group != "Overall" else T) %>% 
@@ -673,12 +680,8 @@ f_graph_2 <- function(.answer,
       ggplot2::ylab("% Responses") + 
       ggplot2::xlab(x_top_label)
   } else {
-    y_label <- .answer %>% 
-      slice(1) %>% 
-      pull(response)
-    
     p <- p + 
-      ggplot2::ylab(y_label) + 
+      ggplot2::ylab("Value") + 
       ggplot2::xlab(x_top_label)
   }
   
@@ -704,8 +707,10 @@ f_graph_2 <- function(.answer,
   
   # CREATE FINAL GRAPH
   p <- p +
-    ggplot2::ggtitle(toupper(y_label)) +
+    ggplot2::ggtitle(toupper(glue::glue(paste(strwrap(paste0(y, ": ", y_label), width = 150), collapse = "\n")))) +
     ggplot2::labs(caption = condition)
+  
+  
   
   if (cluster_chart == T){
     p <- p +
