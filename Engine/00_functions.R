@@ -605,7 +605,7 @@ f_graph_2 <- function(.answer,
   if (numeric_y == T) {
     cols_response <- c(response = y_label)
     .answer <- .answer %>% 
-      select(-response) %>% 
+      #select(-response) %>% 
       tibble::add_column(!!!cols_response[!names(cols_response) %in% names(.)]) %>% 
       mutate(question = trimws(gsub("^.*\\|:", "", .$question)))
   } else {
