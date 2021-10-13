@@ -170,7 +170,7 @@ if (args[2] == "section"){
 } else {
   json_str <- gsub("~", '"', args[2]) 
   data <- jsonlite::fromJSON(json_str) %>% 
-    mutate_all(na_if,"")
+    dplyr::mutate_all(dplyr::na_if,"")
   colnames(data) <- gsub(" ", ".", colnames(data)) 
 }
 
