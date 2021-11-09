@@ -20,37 +20,40 @@ df_in <- d_01_D
 # #####################################################################
 # DO NOT ADD ANY NEW LINE TILL HERE. MAIN CODE SHOULD START AT LINE 23
 # #####################################################################
+add_to_skip <- function(data, y, ...){
+  data <- data %>% 
+    rbind(data.frame(new = y, old = c(...)))
+}
 
 create_new_col <- function(df_in){
   
   df_out <- df_in
   
-  # ****************************************
-  # FORMULA FOR NEW COLUMNS IN THIS SECTION:
-  
-  # EXAMPLE:
-  # df_out <- df_out %>% 
-  #   mutate(new_var = case_when(
-  #     old_var_1 %in% c("A", "B") ~ "Value 1",       Meaning: when old_var_1 is EITHER A OR B then new_var = Value 1
-  #     !(old_var_2 %in% c("C", "D")) ~ "Value 2",    Meaning: else when old_var_2 is NEITHER C NOR D then new_var = value 2
-  #     T                          ~ "value 3"        Meaning: else new_var = "Value 3"
-  # ))
-  # ****************************************
+  # Container to hold skip logic for additional columns 
+  df_skip_info <- data.frame(matrix(ncol=2, nrow=0))
+  colnames(df_skip_info) <- c("new", "old")
   
   # ++++++++++++++++++++++++++START OF SPACE FOR DEFINING NEW COLUMNS++++++++++++++++++++++++++
   
-  # C00: <Describe column being created> ----
+  # C00: Unit weight ----
+  df_out <- df_out %>% 
+    mutate(
+      z_weight = 1
+    )
   
+  df_out %>% 
+    select(z_weight) %>% 
+    f_grouper()
   
-  # C01: <Describe column being created> ----
-  
-  
-  
-  
-  
+  df_skip_info <- df_skip_info %>% 
+    add_to_skip ("z_D_awareness_portability", "T")
   
   # ++++++++++++++++++++++++++ END OF SPACE FOR DEFINING NEW COLUMNS ++++++++++++++++++++++++++
-  return (df_out)
+  return (list(df_out, df_skip_info))
+  
+  
 }
+
+
 
    
