@@ -29,6 +29,11 @@ glue::glue("\n") %>% f_log_string(g_file_log)
 
 map <- f_read_xl(g_file_path, namedRegion = "body_skip", colNames = F)
 
+if (ncol(map) == 4) {
+  map <- map %>% 
+    mutate(X5 = "")
+}
+
 map <- map %>% 
   unique() %>% 
   select(check_var_regex = X1,
