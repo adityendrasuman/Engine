@@ -497,6 +497,10 @@ f_graph_2 <- function(.answer,
   
   options(dplyr.summarise.inform = FALSE)
   
+  if (length(x_all) == 0) {
+    x_all = ""
+  } 
+  
   width_x_label = 10
   width_facet_label = 20
   font_value_label = 8
