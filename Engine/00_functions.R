@@ -207,7 +207,7 @@ f_answer_creator <- function(data, s, y, condition_2 = "T", ...){
     strata_cols = c(d_summ["STRATA", s]) %>% 
       strsplit("\\|")
     strata_cols = strata_cols[[1]] %>% 
-      str_trim()
+      stringr::str_trim()
     weight_col = d_summ["WEIGHT", s]
     
     summariser <- purrr::partial(summariser_base, survey.design = list(
