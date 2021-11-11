@@ -12,7 +12,7 @@ args <- commandArgs(trailingOnly=T)
 setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
 
 # load environment ----
-load("env.RData")
+load("env_small.RData")
 
 source(file.path(g_excel_backend_temp_nospace_dir_rf, "00_functions.R"))
 

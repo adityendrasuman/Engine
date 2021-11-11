@@ -12,7 +12,7 @@ args <- commandArgs(trailingOnly=T)
 setwd(do.call(file.path, as.list(strsplit(args[1], "\\|")[[1]])))
 
 # load environment ----
-load("env.RData")
+load("env_small.RData")
 
 source(file.path(g_excel_backend_temp_nospace_dir_rf, "00_functions.R"))
 
@@ -376,6 +376,8 @@ for (q_no in unique(data$X1)){
         answer <- data.frame(matrix(ncol=9, nrow=0))
         colnames(answer) <- c("group", "response", "N", "value", "value_se", "value_low", "value_upp", "pvalue", "sgnf")
         
+        pb2 <- txtProgressBar(min = 1, max = length(question), style = 3, width = 40)
+        z = 0
         for (q in question){
           
           numeric_y <- ifelse(class(d_02[[q[[2]]]]) == "numeric", T, F)
@@ -389,6 +391,10 @@ for (q_no in unique(data$X1)){
             suppressWarnings() %>% 
             mutate(question = y_label) %>% 
             rbind(answer)
+          
+          z = z + 1
+          setTxtProgressBar(pb2, z)
+          
         }
         
         graph[[q_no]] <- answer %>% 
