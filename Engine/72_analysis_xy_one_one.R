@@ -133,7 +133,7 @@ glue::glue("\n\n") %>% f_log_string(g_file_log)
 rm(list = setdiff(ls(), ls(pattern = "^(d_|g_|f_)")))
 
 # save environment in a session temp variable ----
-save.image(file=file.path(g_wd, "env.RData"))
+save.image(file=file.path(g_wd, "env_small.RData"))
 
 print(glue::glue("\n\n All done!"))
 for(i in 1:3){
